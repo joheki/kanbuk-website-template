@@ -70,6 +70,11 @@ Sobald ein Kundenprojekt aus diesem Template entsteht, lebt es **komplett in sei
 Ordner**. Es gibt keine Updates vom Template zurück in Kundenprojekte. Das Template
 bleibt hier neutral stehen und ist nur der Startpunkt.
 
+Welchen Motor-Stand ein Klon hat, steht in `package.json → version`
+(Kalender-Schema `Jahr.Monat.Tag`) und in STAND.md. **Bei jeder inhaltlichen
+Änderung am Template hier die Version auf das aktuelle Datum heben** – so lässt
+sich später bei jedem Kunden nachvollziehen, welchen Stand er fährt.
+
 ### Das Template bleibt kundenfrei (**strikt**)
 
 **Niemals Daten eines echten Kunden ins Template schreiben** – auch nicht als Beispiel,
@@ -381,6 +386,7 @@ keines optimiert wurde.
 | `npm run check` | **Das Prüf-Tor** – baut und prüft den Standard |
 | `npm run schrift -- --familie "<Name>"` | Google-Schrift lokal einbetten |
 | `npm run karte -- --adresse "…"` | Statisches Kartenbild (statt Maps-Embed) |
+| `npm run og -- --bild fotos/<hero>.jpg` | OG-Vorschaubild aus echtem Foto (beim Port Pflicht) |
 | `npm run platzhalter -- …` | Textlose Platzhalterbilder + OG + Favicon |
 | `npm run stock -- --thema "…"` | Stock-Platzhalter (braucht `PEXELS_API_KEY`) |
 

@@ -43,6 +43,17 @@ export async function verarbeiteKontakt(rohdaten: Eingabe, env: KontaktEnv): Pro
     return { status: 200, json: { ok: true } };
   }
 
+  // 1b) Zeitfalle: Menschen brauchen zum Ausfüllen länger als 3 Sekunden.
+  //     Fehlt das Feld (kein JS) oder ist die Uhr des Geräts verstellt
+  //     (negative Dauer), lassen wir durch – der Honeypot greift weiterhin.
+  const geladen = Number(daten._t ?? '');
+  if (Number.isFinite(geladen) && geladen > 0) {
+    const dauer = Date.now() - geladen;
+    if (dauer >= 0 && dauer < 3000) {
+      return { status: 200, json: { ok: true } };
+    }
+  }
+
   // 2) Welches Formular? Ohne Angabe das erste (üblicherweise 'kontakt').
   const id = (daten.formular ?? '').trim();
   const formular = id ? site.formulare.find((f) => f.id === id) : site.formulare[0];

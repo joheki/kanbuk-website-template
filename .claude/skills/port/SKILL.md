@@ -130,10 +130,11 @@ kommt ins Lücken-Inventar.
 - **OG-Bild + Favicon (Pflicht, wird sonst vergessen):** `public/og.jpg`,
   `public/favicon.svg` und `public/apple-touch-icon.png` gehören zum Template-Muster
   und MÜSSEN beim Port ersetzt werden – sonst zeigt WhatsApp beim Verschicken der
-  Demo das Musterbild. Entweder das Hero-Foto auf 1200×630 zuschneiden (sharp) oder
+  Demo das Musterbild. Der einfache Weg: `npm run og -- --bild fotos/<hero>.jpg`
+  (schneidet das Foto auf 1200×630 zu). Ohne brauchbares Foto:
   `npm run platzhalter -- --name "<Kunde>" --claim "<Claim>" --primaer '<#…>'
-  --sekundaer '<#…>' --hintergrund '<#…>' --force` (erzeugt alle drei aus den
-  Design-Farben).
+  --sekundaer '<#…>' --hintergrund '<#…>' --force` (erzeugt OG + Favicon + Icon
+  aus den Design-Farben).
 
 ---
 

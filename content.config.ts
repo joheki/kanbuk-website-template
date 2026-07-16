@@ -376,6 +376,14 @@ export interface SiteConfig {
   sprachen: Sprache[];
   /** Volle URL ohne abschließenden Schrägstrich, z. B. 'https://ihr-betrieb.at'. */
   domain: string;
+  /**
+   * Cookielose Besucherzählung. 'vercel' = Vercel Web Analytics – wird im
+   * Vercel-Dashboard des Projekts aktiviert (Analytics → Enable), läuft über
+   * die eigene Domain, setzt keine Cookies, braucht keinen Banner.
+   * Dieses Feld sorgt nur dafür, dass die Datenschutzerklärung den passenden
+   * Absatz bekommt. Weglassen = keine Zählung, kein Absatz.
+   */
+  besucherzaehlung?: 'vercel';
   /** Globales OG-Bild (in public/), Standard: '/og.jpg'. */
   ogBild: string;
 }

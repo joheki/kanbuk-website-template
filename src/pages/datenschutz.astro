@@ -97,6 +97,20 @@ const dienstNachKategorie = (['funktional', 'statistik', 'marketing'] as Kategor
     wo die Datenschutzbestimmungen von Google gelten.
   </p>
 
+  {site.besucherzaehlung === 'vercel' && (
+    <>
+      <h2>Reichweitenmessung (ohne Cookies)</h2>
+      <p>
+        Wir messen Seitenaufrufe mit <strong>Vercel Web Analytics</strong> unseres
+        Hosting-Anbieters (Vercel Inc., USA). Die Messung erfolgt <strong>ohne
+        Cookies</strong> und ohne geräteübergreifende Profile; erfasst werden
+        aggregierte, anonymisierte Werte (aufgerufene Seite, Land, Gerätetyp) auf
+        Grundlage unseres berechtigten Interesses an der Reichweitenmessung
+        (Art. 6 Abs. 1 lit. f DSGVO). Ein Personenbezug wird von uns nicht hergestellt.
+      </p>
+    </>
+  )}
+
   <h2>Server-Logfiles (Hosting)</h2>
   <p>
     Beim Aufruf der Website werden durch den Hosting-Anbieter automatisch technische Daten

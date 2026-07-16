@@ -12,6 +12,9 @@ argument-hint: ""
 Zuerst klären, welcher Fall vorliegt (kurz nachfragen, wenn unklar):
 **A) Demo-Vorschau** für einen Lead, oder **B) gebuchter Kunde geht live**.
 
+Vercel-Zugang vorab prüfen: `npx vercel whoami` – falls nicht eingeloggt, den
+Nutzer durch `npx vercel login` führen (Firmen- bzw. eigenes Konto).
+
 Vorab immer: **`npm run check` muss grün sein** (baut selbst und prüft den Standard –
 externe Requests, Meta je Seite, Alt-Texte, feste Breiten, mode-Konsistenz).
 Beim Live-Gang zusätzlich `npm run check -- --live` (prüft Rechtstexte-Platzhalter

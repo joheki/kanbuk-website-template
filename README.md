@@ -132,6 +132,7 @@ Details: [CLAUDE.md, Abschnitt 7a](CLAUDE.md).
 | `npm run check -- --live` | zusätzlich die Live-Pflichten |
 | `npm run schrift -- --familie "<Name>"` | Google-Schrift lokal einbetten |
 | `npm run karte -- --adresse "…"` | Statisches Kartenbild statt Maps-Rahmen |
+| `npm run og -- --bild fotos/hero.jpg` | WhatsApp-/Social-Vorschaubild aus einem echten Foto |
 | `npm run platzhalter -- --name "…"` | Textlose Platzhalter + OG-Bild + Favicon (nach `fotos/`) |
 | `npm run stock -- --thema "…"` | Stock-Platzhalter (braucht `PEXELS_API_KEY` in `.env`) |
 
@@ -177,6 +178,20 @@ kein Branch** des Templates – auf GitHub ist nirgends sichtbar, dass es aus di
 Template entstanden ist. Das private Kunden-Repo (entsteht bei Buchung über `/deploy`)
 ist ein komplett unabhängiges Repository. Es gibt auch keine Updates vom Template
 zurück in Kundenprojekte – das Template ist nur der Startpunkt.
+
+---
+
+## Besucherzahlen – ohne Cookies, ohne Banner
+
+Die Frage kommt von jedem Kunden. Die Antwort des Motors: **Vercel Web Analytics** –
+cookielos, läuft über die eigene Domain, kein Banner nötig. Einrichten in 2 Minuten:
+
+1. Im Vercel-Dashboard des Projekts: **Analytics → Enable**
+2. In `content.config.ts`: `besucherzaehlung: 'vercel'` setzen (ergänzt automatisch
+   den passenden Absatz in der Datenschutzerklärung), neu bauen und deployen
+
+Die Zahlen sieht der Betreiber im Vercel-Dashboard. Für mehr (Kampagnen, Pixel)
+gibt es die Ausbau-Anschlüsse mit Einwilligung – siehe oben.
 
 ---
 

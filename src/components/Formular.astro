@@ -90,6 +90,11 @@ const istDemo = site.mode === 'demo';
       </label>
     ))}
 
+    {/* Zeitfalle gegen Spam: wird per JS mit der Ladezeit befüllt. Absenden
+        unter 3 Sekunden = Bot (Menschen tippen länger). Ohne JS bleibt das
+        Feld leer und die Prüfung entfällt – der Honeypot greift trotzdem. */}
+    <input type="hidden" name="_t" value="" data-formular-zeit />
+
     {/* Honeypot gegen Spam: für Menschen unsichtbar, für Bots verlockend. */}
     <div class="formular__honeypot" aria-hidden="true">
       <label>

@@ -1,7 +1,7 @@
 {
   "name": "kanbuk-website-template",
   "type": "module",
-  "version": "1.0.0",
+  "version": "2026.7.16",
   "description": "Technischer Motor für Kunden-Websites – Design kommt aus Claude Design",
   "scripts": {
     "dev": "astro dev",
@@ -13,7 +13,8 @@
     "check": "astro build && node scripts/check.mjs",
     "astro": "astro",
     "schrift": "node scripts/schrift.mjs",
-    "karte": "node scripts/karte.mjs"
+    "karte": "node scripts/karte.mjs",
+    "og": "node scripts/og.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.6.0",

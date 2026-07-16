@@ -26,6 +26,12 @@ export function formulareStarten(): void {
 
     const t = form.dataset;
 
+    // Zeitfalle: Ladezeitpunkt eintragen – der Server verwirft Absendungen,
+    // die verdächtig schnell danach kommen (Bots). Seite ist statisch, deshalb
+    // muss der Zeitpunkt hier im Browser gesetzt werden, nicht beim Bauen.
+    const zeitFeld = form.querySelector<HTMLInputElement>('[data-formular-zeit]');
+    if (zeitFeld) zeitFeld.value = String(Date.now());
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       status.textContent = '';

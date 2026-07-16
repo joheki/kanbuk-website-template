@@ -321,6 +321,44 @@ for (const f of htmlDateien.filter((f) => !kurz(f).startsWith('404'))) {
 }
 
 // ---------------------------------------------------------------------------
+//  5a. LESBARKEIT – Kontrast der Design-Farben (WCAG)
+//      Jedes Design ist einzigartig – niemand sonst prüft, ob die Textfarbe
+//      auf dem Hintergrund lesbar ist. Unter 3:1 ist Text praktisch unlesbar,
+//      unter 4,5:1 fällt er durch die Zugänglichkeits-Norm für Fließtext.
+// ---------------------------------------------------------------------------
+function relLuminanz(hex) {
+  const h = hex.replace('#', '');
+  const voll = h.length === 3 ? h.split('').map((c) => c + c).join('') : h;
+  const [r, g, b] = [0, 2, 4].map((i) => {
+    const c = parseInt(voll.slice(i, i + 2), 16) / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+function kontrast(hexA, hexB) {
+  const [l1, l2] = [relLuminanz(hexA), relLuminanz(hexB)].sort((a, b) => b - a);
+  return (l1 + 0.05) / (l2 + 0.05);
+}
+{
+  const startHtml = readFileSync(htmlDateien.find((f) => kurz(f) === 'index.html') ?? htmlDateien[0], 'utf-8');
+  const farbe = (name) => startHtml.match(new RegExp(`--farbe-${name}:\\s*(#[0-9a-fA-F]{3,6})`))?.[1];
+  const text = farbe('text');
+  const hintergrund = farbe('hintergrund');
+  if (text && hintergrund) {
+    const v = kontrast(text, hintergrund);
+    if (v < 3) {
+      fehler(
+        `Lesbarkeit: Textfarbe ${text} auf Hintergrund ${hintergrund} hat nur ${v.toFixed(1)}:1 Kontrast – praktisch unlesbar. Farben in content.config.ts -> design.farben anpassen.`,
+      );
+    } else if (v < 4.5) {
+      warnung(
+        `Lesbarkeit: Textfarbe ${text} auf Hintergrund ${hintergrund} hat ${v.toFixed(1)}:1 Kontrast (Norm für Fließtext: 4,5:1). Besser eine dunklere/hellere Textfarbe wählen.`,
+      );
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
 //  5b. BILD-PIPELINE – läuft sie überhaupt?
 //      Liegen Fotos in fotos/, aber im Build taucht kein optimiertes Bild auf,
 //      dann greift die Auflösung ins Leere (z. B. falscher Pfad in bilder.ts).
@@ -509,7 +547,9 @@ if (istLive || nurLive) {
 //  Ergebnis
 // ---------------------------------------------------------------------------
 console.log('');
-console.log(`Geprüft: ${htmlDateien.length} Seite(n), ${bilder.length} Bild(er) — Modus: ${istLive ? 'live' : 'demo'}`);
+console.log(
+  `Geprüft: ${htmlDateien.length} Seite(n), ${bilder.length} Bild(er) — Modus: ${istLive ? 'live' : 'demo'} — Motor ${pkg.version ?? '?'}`,
+);
 console.log('');
 
 if (warnungen.length > 0) {
