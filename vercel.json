@@ -1,0 +1,27 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "_kommentar_de": "AUTOMATISCH ERZEUGT von astro.config.ts – nicht von Hand ändern. Der Inhalt folgt dem Feld `mode` in content.config.ts: bei \"demo\" mit X-Robots-Tag (nicht indexierbar), bei \"live\" ohne. Einfach mode umstellen und neu bauen.",
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "geolocation=(), camera=(), microphone=(), interest-cohort=()"
+        }
+      ]
+    }
+  ]
+}

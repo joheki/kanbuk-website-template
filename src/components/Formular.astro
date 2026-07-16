@@ -1,0 +1,129 @@
+---
+/**
+ * Formular – MOTOR-Baustein.
+ *
+ * Rendert die Felder aus content.config.ts -> formulare, hängt den Honeypot an,
+ * setzt die Motor-Texte in der gewählten Ansprache und verdrahtet den
+ * Datenschutz-Hinweis. Das AUSSEHEN kommt aus dem Design.
+ *
+ * Im demo-Modus wird bewusst KEIN Formular gerendert, sondern ein Hinweis:
+ * Ohne Resend-Schlüssel würde ein Absenden ins Leere laufen.
+ *
+ * Verwendung:  <Formular id="kontakt" />
+ */
+import { site } from '../../content.config';
+import { motorTexte } from '../lib/texte';
+
+interface Props {
+  /** ID aus content.config.ts -> formulare */
+  id: string;
+  class?: string;
+}
+const { id, class: klasse } = Astro.props;
+
+const formular = site.formulare.find((f) => f.id === id);
+if (!formular) {
+  throw new Error(
+    `Formular "${id}" gibt es nicht. Bekannt: ${site.formulare.map((f) => f.id).join(', ') || '(keine)'}. Ergänze es in content.config.ts -> formulare.`,
+  );
+}
+
+const t = motorTexte(site.ansprache);
+const istDemo = site.mode === 'demo';
+---
+
+{istDemo ? (
+  <div class:list={['formular-demo', klasse]} role="note" data-formular-demo>
+    <strong>Formular in der Vorschau deaktiviert</strong>
+    <p>{t.formularDemo}</p>
+  </div>
+) : (
+  <form
+    class:list={['formular', klasse]}
+    method="post"
+    action="/api/contact"
+    novalidate
+    data-formular
+    data-formular-id={formular.id}
+    data-text-sendet={t.sendet}
+    data-text-erfolg={t.erfolg}
+    data-text-fehler={t.fehler}
+    data-text-verbindungsfehler={t.verbindungsfehler}
+  >
+    <input type="hidden" name="formular" value={formular.id} />
+
+    {formular.felder.map((f) => (
+      <label class="formular__feld" data-feld={f.name} data-typ={f.typ}>
+        <span class="formular__label">
+          {f.label}
+          {!f.pflicht && <em class="formular__optional">(optional)</em>}
+        </span>
+
+        {f.typ === 'textarea' ? (
+          <textarea
+            name={f.name}
+            rows="5"
+            required={f.pflicht}
+            placeholder={f.platzhalter}
+          />
+        ) : f.typ === 'auswahl' ? (
+          <select name={f.name} required={f.pflicht}>
+            <option value="">Bitte wählen</option>
+            {(f.optionen ?? []).map((o) => <option value={o}>{o}</option>)}
+          </select>
+        ) : (
+          <input
+            type={
+              f.typ === 'datum' ? 'date'
+              : f.typ === 'zeit' ? 'time'
+              : f.typ === 'zahl' ? 'number'
+              : f.typ
+            }
+            name={f.name}
+            required={f.pflicht}
+            autocomplete={f.autocomplete}
+            placeholder={f.platzhalter}
+            min={f.min}
+            max={f.max}
+          />
+        )}
+      </label>
+    ))}
+
+    {/* Honeypot gegen Spam: für Menschen unsichtbar, für Bots verlockend. */}
+    <div class="formular__honeypot" aria-hidden="true">
+      <label>
+        Bitte dieses Feld frei lassen
+        <input type="text" name="webseite" tabindex="-1" autocomplete="off" />
+      </label>
+    </div>
+
+    <button type="submit" class="formular__absenden" data-formular-absenden>
+      Senden
+    </button>
+
+    <p class="formular__status" role="status" aria-live="polite" data-formular-status></p>
+
+    <p class="formular__hinweis">
+      {t.einwilligung}<a href="/datenschutz">Datenschutzerklärung</a>.
+    </p>
+  </form>
+)}
+
+<style>
+  /* Nur das Nötigste – alles Weitere gestaltet das Design.
+     Der Honeypot MUSS unsichtbar bleiben, sonst füllen ihn echte Menschen aus. */
+  .formular__honeypot {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+  .formular__feld {
+    display: grid;
+  }
+  .formular__optional {
+    font-style: normal;
+  }
+</style>

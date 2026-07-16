@@ -1,0 +1,23 @@
+{
+  "name": "kanbuk-website-template",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Technischer Motor für Kunden-Websites – Design kommt aus Claude Design",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "deploy": "echo \"Deploy: npx vercel --prod – siehe README.md / .claude/skills/deploy\"",
+    "platzhalter": "node scripts/platzhalter.mjs",
+    "stock": "node scripts/stock.mjs",
+    "check": "astro build && node scripts/check.mjs",
+    "astro": "astro",
+    "schrift": "node scripts/schrift.mjs",
+    "karte": "node scripts/karte.mjs"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.6.0",
+    "astro": "^5.14.1",
+    "sharp": "^0.34.4"
+  }
+}

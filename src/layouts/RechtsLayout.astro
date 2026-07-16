@@ -1,0 +1,97 @@
+---
+/**
+ * Layout für die Rechts-Unterseiten (/impressum, /datenschutz).
+ *
+ * Diese Seiten sind MOTOR-Gebiet, nicht Design-Gebiet: Sie müssen lesbar,
+ * vollständig und auffindbar sein – gestalterisch reicht schlicht. Sie
+ * benutzen die Design-Tokens, damit sie zum Rest passen, brauchen aber kein
+ * eigenes Design aus Claude Design.
+ */
+import BaseLayout from './BaseLayout.astro';
+import { site } from '../../content.config';
+
+interface Props {
+  titel: string;
+  pfad: string;
+  /** Eigene Meta-Description – jede Seite braucht eine eigene (prüft check.mjs). */
+  beschreibung: string;
+}
+const { titel, pfad, beschreibung } = Astro.props;
+---
+
+<BaseLayout pfad={pfad} titel={titel} beschreibung={beschreibung}>
+  <main id="inhalt" class="rechtsseite">
+    <div class="container container--schmal">
+      <a class="rechtsseite__zurueck" href="/">← Zur Startseite</a>
+      <h1>{titel}</h1>
+      <div class="prose">
+        <slot />
+      </div>
+    </div>
+  </main>
+
+  <footer class="rechtsseite__footer">
+    <div class="container container--schmal">
+      <p>© {new Date().getFullYear()} {site.betrieb.name}</p>
+      <nav aria-label="Rechtliches">
+        <a href="/impressum">Impressum</a>
+        <a href="/datenschutz">Datenschutz</a>
+      </nav>
+    </div>
+  </footer>
+</BaseLayout>
+
+<style>
+  .rechtsseite {
+    padding-block: var(--raum-xl);
+  }
+  .rechtsseite__zurueck {
+    display: inline-block;
+    margin-bottom: var(--raum-m);
+    font-size: var(--schrift-s);
+  }
+  .rechtsseite h1 {
+    font-size: var(--schrift-2xl);
+    margin-bottom: var(--raum-m);
+  }
+  .prose :global(h2) {
+    font-size: var(--schrift-l);
+    margin: var(--raum-m) 0 var(--raum-2xs);
+  }
+  .prose :global(h3) {
+    font-size: var(--schrift-m);
+    margin: var(--raum-s) 0 var(--raum-3xs);
+  }
+  .prose :global(p) {
+    margin-bottom: var(--raum-xs);
+  }
+  .prose :global(ul) {
+    margin: 0 0 var(--raum-xs) var(--raum-s);
+    display: grid;
+    gap: var(--raum-3xs);
+  }
+  .prose :global(address) {
+    font-style: normal;
+    margin-bottom: var(--raum-xs);
+  }
+  /* Lange URLs/E-Mails dürfen schmale Screens nicht sprengen. */
+  .prose :global(a) {
+    word-break: break-word;
+  }
+
+  .rechtsseite__footer {
+    padding-block: var(--raum-m);
+    border-top: 1px solid color-mix(in srgb, var(--farbe-text) 15%, transparent);
+    font-size: var(--schrift-s);
+  }
+  .rechtsseite__footer .container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--raum-xs) var(--raum-m);
+    justify-content: space-between;
+  }
+  .rechtsseite__footer nav {
+    display: flex;
+    gap: var(--raum-s);
+  }
+</style>

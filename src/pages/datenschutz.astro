@@ -1,0 +1,133 @@
+---
+import RechtsLayout from '../layouts/RechtsLayout.astro';
+import { site, brauchtEinwilligung, type Kategorie } from '../../content.config';
+
+const r = site.rechtstexte;
+
+/** Sobald Dienste aktiv sind, MUSS die Erklärung sie nennen (Rechtspflicht). */
+const hatDienste = brauchtEinwilligung(site);
+
+const KATEGORIE_TITEL: Record<string, string> = {
+  funktional: 'Komfort-Dienste',
+  statistik: 'Statistik / Reichweitenmessung',
+  marketing: 'Marketing',
+};
+
+/** Dienste nach Kategorie gruppieren – so liest es sich wie eine Behörde es erwartet. */
+const dienstNachKategorie = (['funktional', 'statistik', 'marketing'] as Kategorie[])
+  .map((k) => [k, site.dienste.filter((d) => d.kategorie === k)] as const)
+  .filter(([, liste]) => liste.length > 0);
+---
+
+<RechtsLayout
+  titel="Datenschutzerklärung"
+  pfad="/datenschutz"
+  beschreibung={
+    hatDienste
+      ? `Datenschutzerklärung von ${site.betrieb.name}: welche Daten wir verarbeiten, welche Dienste wir einsetzen und welche Rechte Sie haben – inklusive Widerruf Ihrer Einwilligung.`
+      : `Datenschutzerklärung von ${site.betrieb.name}: welche Daten wir verarbeiten, auf welcher Grundlage und welche Rechte Sie haben. Diese Website nutzt keine Cookies.`
+  }
+>
+  <p>
+    Der Schutz Ihrer persönlichen Daten ist uns wichtig. Wir verarbeiten Ihre Daten
+    ausschließlich auf Grundlage der gesetzlichen Bestimmungen (DSGVO, TKG 2021).
+  </p>
+
+  <h2>Verantwortlicher</h2>
+  <address>
+    <strong>{r.firmenwortlaut}</strong><br />
+    {r.adresse}<br />
+    E-Mail: <a href={`mailto:${site.betrieb.email}`}>{site.betrieb.email}</a>
+  </address>
+
+  {/* Dieser Abschnitt richtet sich nach content.config.ts -> dienste.
+      Ohne Dienste ist die Seite cookiefrei; sobald einer aktiv ist, wäre die
+      Aussage „keine Cookies" falsch – und eine falsche Datenschutzerklärung
+      ist ein echtes Rechtsrisiko. Deshalb schaltet der Text automatisch um. */}
+  {!hatDienste ? (
+    <>
+      <h2>Keine Cookies, kein Tracking</h2>
+      <p>
+        Diese Website verwendet <strong>keine Cookies</strong>, kein Analyse-Werkzeug und
+        keine Tracking-Skripte. Es werden keine Nutzungsprofile erstellt. Deshalb benötigt
+        diese Seite auch keinen Cookie-Banner.
+      </p>
+    </>
+  ) : (
+    <>
+      <h2>Einwilligung, Cookies und externe Dienste</h2>
+      <p>
+        Diese Website nutzt Dienste, die erst geladen werden, <strong>nachdem Sie
+        zugestimmt haben</strong>. Ohne Ihre Einwilligung wird nichts davon geladen, es
+        werden keine Daten an diese Anbieter übertragen und keine Cookies gesetzt
+        (Art. 6 Abs. 1 lit. a DSGVO, § 165 Abs. 3 TKG 2021).
+      </p>
+      <p>
+        Ihre Entscheidung speichern wir lokal in Ihrem Browser (localStorage) – dabei
+        werden keine Daten an uns übertragen. Sie können Ihre Einwilligung jederzeit mit
+        Wirkung für die Zukunft widerrufen:
+        {' '}<button type="button" class="ds-widerruf" data-einwilligung-widerruf>Einwilligung widerrufen</button>.
+      </p>
+
+      {dienstNachKategorie.map(([kategorie, liste]) => (
+        <>
+          <h3>{KATEGORIE_TITEL[kategorie] ?? kategorie}</h3>
+          <ul>
+            {liste.map((d) => (
+              <li>
+                <strong>{d.name}</strong> – Anbieter: {d.anbieter}.<br />
+                Zweck: {d.zweck}.
+                {d.setztCookies && <> Dieser Dienst setzt Cookies.</>}
+                {' '}Datenschutzerklärung des Anbieters:{' '}
+                <a href={d.datenschutzUrl} target="_blank" rel="noopener noreferrer">{d.datenschutzUrl}</a>
+              </li>
+            ))}
+          </ul>
+        </>
+      ))}
+    </>
+  )}
+
+  <h2>Karte / Anfahrt</h2>
+  <p>
+    Für die Anfahrt zeigen wir ein <strong>statisches Bild</strong> (Kartendaten von
+    OpenStreetMap, beim Erstellen der Seite eingebunden). Es wird keine Karte
+    eingebettet, es werden also keine Daten übertragen, solange Sie nicht selbst auf
+    den Link „In Google Maps öffnen“ klicken. Erst dann gelangen Sie zu Google Maps,
+    wo die Datenschutzbestimmungen von Google gelten.
+  </p>
+
+  <h2>Server-Logfiles (Hosting)</h2>
+  <p>
+    Beim Aufruf der Website werden durch den Hosting-Anbieter automatisch technische Daten
+    (z. B. IP-Adresse, Datum und Uhrzeit, aufgerufene Seite, Browsertyp) in sogenannten
+    Server-Logfiles gespeichert. Diese Verarbeitung dient dem sicheren und stabilen Betrieb
+    (Art. 6 Abs. 1 lit. f DSGVO). Die Daten werden nicht mit anderen Quellen zusammengeführt.
+  </p>
+
+  <h2>Kontaktformular</h2>
+  <p>
+    Wenn Sie uns über das Kontaktformular schreiben, verarbeiten wir die von Ihnen
+    angegebenen Daten (Name, E-Mail-Adresse, ggf. Telefonnummer und Ihre Nachricht),
+    um Ihre Anfrage zu beantworten (Art. 6 Abs. 1 lit. b und f DSGVO). Der Versand der
+    Nachricht an unser Postfach erfolgt über den Dienst <strong>Resend</strong>
+    (Resend, Inc.). Wir geben Ihre Daten nicht ohne Ihre Einwilligung an weitere Dritte
+    weiter und speichern sie nur so lange, wie es zur Bearbeitung Ihrer Anfrage
+    erforderlich ist.
+  </p>
+
+  <h2>Ihre Rechte</h2>
+  <p>Ihnen stehen nach der DSGVO folgende Rechte zu:</p>
+  <ul>
+    <li>Auskunft über die zu Ihrer Person gespeicherten Daten (Art. 15)</li>
+    <li>Berichtigung unrichtiger Daten (Art. 16)</li>
+    <li>Löschung (Art. 17) und Einschränkung der Verarbeitung (Art. 18)</li>
+    <li>Datenübertragbarkeit (Art. 20)</li>
+    <li>Widerspruch gegen die Verarbeitung (Art. 21)</li>
+  </ul>
+  <p>
+    Wenden Sie sich dazu bitte an <a href={`mailto:${site.betrieb.email}`}>{site.betrieb.email}</a>.
+    Außerdem haben Sie das Recht auf Beschwerde bei der österreichischen Datenschutzbehörde
+    (<a href="https://www.dsb.gv.at" target="_blank" rel="noopener noreferrer">www.dsb.gv.at</a>).
+  </p>
+</RechtsLayout>

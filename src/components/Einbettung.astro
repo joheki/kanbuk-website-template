@@ -1,0 +1,121 @@
+---
+/**
+ * Einbettung – MOTOR-Baustein: 2-Klick-Lösung für externe Rahmen.
+ *
+ * Für Kunden, die unbedingt eine bediente Google-Karte, ein YouTube-Video oder
+ * einen Instagram-Beitrag wollen. Der <iframe> steht NICHT im HTML – er entsteht
+ * erst beim Klick. Bis dahin geht kein Byte an den fremden Anbieter.
+ *
+ * Damit bleibt die Seite ohne Einwilligungs-Banner zulässig: Der Klick IST die
+ * Einwilligung für diesen einen Fall.
+ *
+ * BESSER für die Anfahrt: `npm run karte` – ein statisches Bild mit Link.
+ * Kein Rahmen, kein Klick, keine Diskussion. Diese Komponente ist die Ausnahme.
+ *
+ * Verwendung:
+ *   <Einbettung
+ *     url="https://www.google.com/maps/embed?pb=…"
+ *     titel="Karte: Musterstraße 1"
+ *     anbieter="Google Maps"
+ *   >
+ *     <Image src={karte} alt="Karte" />   <!-- Platzhalter (optional) -->
+ *   </Einbettung>
+ */
+import { site } from '../../content.config';
+
+interface Props {
+  /** Die Embed-Adresse des Anbieters. */
+  url: string;
+  /** Titel des Rahmens – Pflicht für Screenreader. */
+  titel: string;
+  /** Anbietername, erscheint im Hinweis („… lädt Inhalte von Google Maps"). */
+  anbieter: string;
+  /** Seitenverhältnis, z. B. "16 / 9" (Video) oder "4 / 3" (Karte). */
+  format?: string;
+  /** Einwilligungs-Kategorie. Standard: funktional. */
+  kategorie?: 'funktional' | 'statistik' | 'marketing';
+  class?: string;
+}
+
+const { url, titel, anbieter, format = '16 / 9', kategorie = 'funktional', class: klasse } = Astro.props;
+
+const t =
+  site.ansprache === 'du'
+    ? {
+        hinweis: `Beim Laden werden Daten an ${anbieter} übertragen – auch deine IP-Adresse.`,
+        knopf: `${anbieter} laden`,
+        dauerhaft: 'Erst nach deinem Klick. Vorher wird nichts übertragen.',
+      }
+    : {
+        hinweis: `Beim Laden werden Daten an ${anbieter} übertragen – auch Ihre IP-Adresse.`,
+        knopf: `${anbieter} laden`,
+        dauerhaft: 'Erst nach Ihrem Klick. Vorher wird nichts übertragen.',
+      };
+---
+
+<div
+  class:list={['einbettung', klasse]}
+  data-einbettung={url}
+  data-einbettung-titel={titel}
+  data-einbettung-kategorie={kategorie}
+  data-einbettung-format={format}
+  style={`aspect-ratio: ${format};`}
+>
+  <div class="einbettung__platzhalter">
+    {/* Optionaler Platzhalter (z. B. das statische Kartenbild) */}
+    <slot />
+    <div class="einbettung__hinweis">
+      <p class="einbettung__text">{t.hinweis}</p>
+      <button type="button" class="einbettung__knopf" data-einbettung-laden>{t.knopf}</button>
+      <p class="einbettung__klein">{t.dauerhaft}</p>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Nur das Nötigste, damit der Platzhalter benutzbar ist – Rest macht das Design. */
+  .einbettung {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius);
+  }
+  .einbettung__platzhalter {
+    position: absolute;
+    inset: 0;
+  }
+  .einbettung__platzhalter :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .einbettung__hinweis {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    gap: var(--raum-2xs);
+    padding: var(--raum-s);
+    text-align: center;
+    background: color-mix(in srgb, var(--farbe-hintergrund) 82%, transparent);
+    backdrop-filter: blur(2px);
+  }
+  .einbettung__text {
+    font-size: var(--schrift-s);
+    max-width: 44ch;
+  }
+  .einbettung__knopf {
+    padding: var(--raum-2xs) var(--raum-s);
+    border: 1px solid var(--farbe-primaer);
+    border-radius: var(--radius);
+    font-weight: 600;
+  }
+  .einbettung__klein {
+    font-size: var(--schrift-xs);
+    opacity: 0.75;
+  }
+  /* Nach dem Laden ersetzt das Skript den Inhalt durch den <iframe>. */
+  .einbettung.ist-geladen {
+    aspect-ratio: auto;
+  }
+</style>

@@ -1,0 +1,58 @@
+---
+import RechtsLayout from '../layouts/RechtsLayout.astro';
+import { site } from '../../content.config';
+
+const r = site.rechtstexte;
+const telVerlinkt = site.mode === 'live';
+const telHref = 'tel:' + site.betrieb.telefon.replace(/[^+0-9]/g, '');
+---
+
+<RechtsLayout
+  titel="Impressum"
+  pfad="/impressum"
+  beschreibung={`Impressum und Offenlegung von ${site.betrieb.name} gemäß § 5 ECG, § 14 UGB und § 25 Mediengesetz: Medieninhaber, Unternehmensdaten, Kontakt und Aufsichtsbehörde.`}
+>
+  <p>Offenlegung gemäß § 5 ECG, § 14 UGB und § 25 Mediengesetz.</p>
+
+  <h2>Medieninhaber &amp; Diensteanbieter</h2>
+  <address>
+    <strong>{r.firmenwortlaut}</strong><br />
+    {r.adresse}
+  </address>
+
+  <h2>Kontakt</h2>
+  <p>
+    Telefon: {telVerlinkt ? <a href={telHref}>{site.betrieb.telefon}</a> : <span>{site.betrieb.telefon}</span>}<br />
+    E-Mail: <a href={`mailto:${site.betrieb.email}`}>{site.betrieb.email}</a>
+  </p>
+
+  <h2>Unternehmensdaten</h2>
+  <ul>
+    <li>Rechtsform: {r.rechtsform}</li>
+    {r.uid && <li>UID-Nummer: {r.uid}</li>}
+    {r.firmenbuchnummer && <li>Firmenbuchnummer: {r.firmenbuchnummer}</li>}
+    {r.firmenbuchgericht && <li>Firmenbuchgericht: {r.firmenbuchgericht}</li>}
+    {r.gewerbe && <li>Gewerbe: {r.gewerbe}</li>}
+    {r.aufsichtsbehoerde && <li>Aufsichtsbehörde: {r.aufsichtsbehoerde}</li>}
+  </ul>
+
+  <h2>Anwendbares Recht</h2>
+  <p>Es gilt österreichisches Recht.</p>
+
+  <h2>Verbraucherstreitbeilegung</h2>
+  <p>
+    Zur außergerichtlichen Beilegung von Streitigkeiten stellt die Europäische Kommission
+    eine Online-Streitbeilegungsplattform bereit:
+    <a href="https://ec.europa.eu/consumers/odr" target="_blank" rel="noopener noreferrer">ec.europa.eu/consumers/odr</a>.
+    Wir sind nicht verpflichtet und nicht bereit, an einem Streitbeilegungsverfahren vor
+    einer Verbraucherschlichtungsstelle teilzunehmen.
+  </p>
+
+  <h2>Haftung für Inhalte</h2>
+  <p>
+    Die Inhalte dieser Website wurden mit größtmöglicher Sorgfalt erstellt. Für die
+    Richtigkeit, Vollständigkeit und Aktualität der Inhalte können wir keine Gewähr
+    übernehmen. Für Inhalte externer Links sind ausschließlich deren Betreiber
+    verantwortlich.
+  </p>
+</RechtsLayout>

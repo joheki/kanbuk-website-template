@@ -1,0 +1,10 @@
+# Einheitliche Zeilenenden über alle Plattformen/Klone hinweg
+* text=auto eol=lf
+
+# Binärdateien nicht anfassen
+*.woff2 binary
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.ico binary
+*.pdf binary

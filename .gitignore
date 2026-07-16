@@ -1,0 +1,30 @@
+# build output
+dist/
+.output/
+.vercel/
+.netlify/
+
+# dependencies
+node_modules/
+
+# astro
+.astro/
+
+# environment
+.env
+.env.production
+.env.local
+.env.*.local
+
+# logs
+npm-debug.log*
+*.log
+
+# os / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# claude code – persönliche lokale Einstellungen (settings.json wird committet)
+.claude/settings.local.json

@@ -1,0 +1,51 @@
+---
+/**
+ * Technische Fehlerseite. Bewusst schlicht und motor-eigen: Sie muss existieren
+ * und funktionieren, braucht aber kein Design aus Claude Design.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { site } from '../../content.config';
+---
+
+<BaseLayout
+  pfad="/404"
+  titel="Seite nicht gefunden"
+  beschreibung={`Die aufgerufene Seite gibt es nicht. Zurück zur Startseite von ${site.betrieb.name}.`}
+>
+  <main id="inhalt" class="fehler">
+    <div class="container container--schmal fehler__inner">
+      <p class="fehler__code">Fehler 404</p>
+      <h1>Diese Seite gibt es nicht</h1>
+      <p>Die aufgerufene Seite wurde nicht gefunden.</p>
+      <a class="fehler__link" href="/">← Zur Startseite</a>
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  .fehler {
+    min-height: 60vh;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    padding-block: var(--raum-2xl);
+  }
+  .fehler__inner {
+    display: grid;
+    gap: var(--raum-xs);
+    justify-items: center;
+  }
+  .fehler__code {
+    font-size: var(--schrift-s);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    opacity: 0.7;
+  }
+  .fehler h1 {
+    font-size: var(--schrift-2xl);
+  }
+  .fehler__link {
+    margin-top: var(--raum-s);
+    font-weight: 600;
+  }
+</style>

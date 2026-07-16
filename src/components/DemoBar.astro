@@ -1,0 +1,74 @@
+---
+/**
+ * Schmale Leiste ganz oben – NUR im demo-Modus.
+ * Im Kanbuk-Marken-Look (Violett #6D28D9, Wortmarke + Zeichen), bewusst UNABHÄNGIG
+ * von den Kundenfarben – der Balken gehört zu Kanbuk, nicht zum Kunden.
+ * Marken-Tokens aus dem Kanbuk Design System (Claude Design).
+ */
+import { site } from '../../content.config';
+---
+
+<div class="demobar" role="note">
+  <span class="demobar__marke">
+    <svg class="demobar__mark" viewBox="0 0 36 36" aria-hidden="true">
+      <g transform="translate(3,4) scale(1.32)" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M8 11 Q15 6.5 21.5 10"></path>
+        <path d="M19.4 9 L22 10.2 L21 12.8"></path>
+        <path d="M22 19 Q15 23.5 8.5 20"></path>
+        <path d="M10.6 21 L8 19.8 L9 17.2"></path>
+      </g>
+    </svg>
+    <span class="demobar__wort">Kanbuk</span>
+  </span>
+  <span class="demobar__sep" aria-hidden="true"></span>
+  <span class="demobar__text">Vorschau für {site.betrieb.name}</span>
+</div>
+
+<style>
+  .demobar {
+    /* Fixe Kanbuk-Markenfarben – nicht aus den Kundenvariablen! */
+    background: linear-gradient(90deg, #6d28d9 0%, #5b21b6 100%);
+    color: #ffffff;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 0.82rem;
+    letter-spacing: 0.01em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    padding: 0.5rem 1rem;
+  }
+  .demobar__marke {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex: none;
+  }
+  .demobar__mark {
+    width: 18px;
+    height: 18px;
+    display: block;
+  }
+  .demobar__wort {
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    font-size: 0.9rem;
+  }
+  .demobar__sep {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.55);
+    flex: none;
+  }
+  .demobar__text {
+    opacity: 0.95;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  @media (max-width: 400px) {
+    .demobar { font-size: 0.75rem; gap: 0.45rem; }
+    .demobar__wort { font-size: 0.82rem; }
+  }
+</style>

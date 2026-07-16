@@ -1,0 +1,38 @@
+---
+/**
+ * Navigation – MOTOR-Baustein: liefert Struktur, Routen und aktiven Zustand.
+ * Das AUSSEHEN kommt aus dem Design (Klassen unten sind nur Haken zum Anmalen).
+ *
+ * Die Einträge kommen aus content.config.ts -> seiten (inNavigation).
+ * Der Mobil-Schalter wird von src/lib/verhalten/mobilmenue.ts bedient.
+ */
+import { site } from '../../content.config';
+
+interface Props {
+  /** Aktueller Pfad, z. B. '/speisekarte' – für aria-current. */
+  aktuell?: string;
+}
+const { aktuell = '/' } = Astro.props;
+
+const eintraege = site.seiten.filter((s) => s.inNavigation !== false);
+---
+
+<button class="navi-schalter" data-menue-schalter aria-label="Menü öffnen">
+  <span class="navi-schalter__strich" aria-hidden="true"></span>
+</button>
+
+<nav id="hauptnavi" class="navi" data-menue aria-label="Hauptnavigation">
+  <ul class="navi__liste">
+    {eintraege.map((s) => (
+      <li>
+        <a
+          class="navi__link"
+          href={s.pfad}
+          aria-current={s.pfad === aktuell ? 'page' : undefined}
+        >
+          {s.navTitel}
+        </a>
+      </li>
+    ))}
+  </ul>
+</nav>

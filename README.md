@@ -1,0 +1,177 @@
+# Kanbuk Website-Template
+
+**Der technische Motor für Websites Wiener Kleinbetriebe.**
+
+Dieses Repo ist **kein Design-Template**. Es legt fest, *wie* eine Seite gebaut sein
+muss – Meta-Tags, Responsiveness, Sicherheit, DSGVO, Ladezeit, Recht. Es legt **nicht**
+fest, wie sie aussieht.
+
+**Das Design kommt aus [Claude Design](https://claude.ai/design).** Dort entsteht die
+komplette Website visuell, mit allen Unterseiten und echten Inhalten. Der Motor setzt
+sie technisch sauber um.
+
+> Der Motor liefert die Mechanik, das Design den Lack.
+
+Technik: **Astro**, rein statischer Build. Kein CMS, keine Datenbank, keine Cookies,
+kein Tracking, kein Cookie-Banner.
+
+---
+
+## Der Ablauf
+
+### 1 · Design bauen — *du, in Claude Design*
+
+Neues Projekt anlegen, den Text aus [`vorlagen/design-briefing.md`](vorlagen/design-briefing.md)
+einfügen, Lead-Daten dazugeben (Website-Link, Fotos, Speisekarte, Öffnungszeiten).
+Gestalten, bis es passt. **Projekt-Link kopieren.**
+
+Um Technik kümmerst du dich dort nicht – feste Pixel, Desktop-Layout, CDN-Schriften
+sind egal. Das wird beim Portieren umgebaut.
+
+### 2 · Vorschau bauen — *Claude Code, ~30 min*
+
+```bash
+# Das Template liegt im GitHub-Konto joheki – zieht es je um, nur diese Zeile anpassen.
+npx degit joheki/kanbuk-website-template kanbuk-kunden/<kunde>
+cd kanbuk-kunden/<kunde>
+npm install
+```
+
+Ordner in VS Code öffnen, Claude Code starten:
+
+```
+/port https://claude.ai/design/p/<projekt-id>
+```
+
+Ergebnis: **die fertige Seite** – echte Unterseiten, vollständig responsiv, SEO,
+sicher, cookiefrei. Nur ohne Zugänge. Dann `/deploy` für die Vorschau-Domain.
+
+### 3 · Kunde bucht — *~15 min*
+
+`STAND.md` im Kundenordner öffnen – dort steht, was noch offen ist. Dann nur noch
+drei Dinge, kein Basteln an Technik:
+
+1. `mode: 'live'` in `content.config.ts` (Header/Sitemap stellt der Build automatisch um)
+2. Echte **Rechtstexte** (UID, Firmenbuch – Impressumspflicht) + offene Punkte aus `STAND.md`
+3. `RESEND_API_KEY` + `CONTACT_FROM` setzen, Domain verbinden
+
+```bash
+npm run check -- --live   # muss grün sein
+npx vercel --prod
+```
+
+---
+
+## Was der Motor mitbringt
+
+| Bereich | Inhalt |
+| --- | --- |
+| **SEO** | Meta je Seite (Titel, Description, Canonical, OG), JSON-LD `LocalBusiness` mit maschinenlesbaren Öffnungszeiten, Sitemap, `hreflang` |
+| **Responsiveness** | Fluide Token-Skala (350–1440 px) – jeder Pixelwert aus dem Design wird zum Token |
+| **Verhalten** | Tabs, Filter, Slider, Akkordeon, Lightbox, Mobilmenü, Vorher/Nachher – branchenneutral, unstyled |
+| **Formulare** | Beliebig viele (Kontakt, Reservierung, Termin, Angebot) aus der Config, Honeypot, Resend |
+| **Recht** | Impressum + Datenschutz (passen sich automatisch an), cookiefrei ab Werk |
+| **Ausbau** | Pixel/Tracking und Maps/YouTube sind **vorbereitet** – siehe unten |
+| **Weiterleitungen** | Alte Adressen → neue, rettet das Google-Ranking bei Vorgänger-Websites |
+| **demo/live** | Ein Wort schaltet Balken, Formular, `tel:`, Indexierung, Sitemap, Header |
+| **Prüf-Tor** | `npm run check` lässt nichts durch, was den Standard unterschreitet |
+
+Verbindliche Regeln: **[CLAUDE.md](CLAUDE.md)** – inklusive Umrechnungstabelle
+(Design-Pixel → Token) und Portier-Rezept.
+
+---
+
+## Später ausbauen (Pixel, Maps, …)
+
+**Ab Werk ist die Seite cookiefrei und braucht keinen Banner.** Das ist Absicht: kein
+Banner heißt bessere Bedienung und mehr Anfragen.
+
+Will ein Kunde später **Meta-Pixel, Google Ads oder Analytics**, ist das ein
+Config-Eintrag – kein Neubau. Der Motor bringt die Anschlüsse fertig mit:
+
+```ts
+dienste: [
+  { id: 'meta-pixel', name: 'Meta-Pixel', anbieter: 'Meta Platforms Ireland Ltd.',
+    kategorie: 'marketing', zweck: 'Messung von Werbeerfolgen',
+    datenschutzUrl: 'https://www.facebook.com/privacy/policy/',
+    setztCookies: true, skript: '…' },
+],
+```
+
+Automatisch passiert dann: Einwilligungs-Banner erscheint, das Skript bleibt **bis zum
+Ja des Besuchers geparkt** (Opt-in, DSGVO), und die Datenschutzerklärung nennt den
+Dienst samt Widerruf. Das Design des Banners kommt aus Claude Design.
+
+**Google Maps / YouTube / Instagram:** kein fester `<iframe>` (der lädt sofort und setzt
+Cookies). Zwei Wege: statisches Kartenbild + Link (`npm run karte`, der Standard) oder
+die **2-Klick-Einbettung** `<Einbettung>` – der Rahmen entsteht erst beim Klick.
+
+Details: [CLAUDE.md, Abschnitt 7a](CLAUDE.md).
+
+---
+
+## Befehle
+
+| Befehl | Zweck |
+| --- | --- |
+| `npm run dev` | Vorschau lokal (http://localhost:4321) |
+| `npm run check` | **Das Prüf-Tor** – baut und prüft den Standard |
+| `npm run check -- --live` | zusätzlich die Live-Pflichten |
+| `npm run schrift -- --familie "<Name>"` | Google-Schrift lokal einbetten |
+| `npm run karte -- --adresse "…"` | Statisches Kartenbild statt Maps-Rahmen |
+| `npm run platzhalter -- --name "…"` | Textlose Platzhalter + OG-Bild + Favicon (nach `fotos/`) |
+| `npm run stock -- --thema "…"` | Stock-Platzhalter (braucht `PEXELS_API_KEY` in `.env`) |
+
+---
+
+## Aufbau
+
+```
+content.config.ts        Motor-Schnittstelle: Betrieb, Design-Tokens, Seiten, Recht
+STAND.md                 Gedächtnis des Projekts: Phase, Lücken-Inventar, Verlauf
+fotos/                   >>> HIER kommen alle Bilder rein <<<  (siehe fotos/README.md)
+src/
+  styles/global.css      Token-Fundament (fluide Skala) – KEINE Design-Entscheidungen
+  styles/fonts.css       lokale Schriften (pro Kunde via npm run schrift)
+  lib/verhalten/         Verhaltens-Bausteine: Mechanik ohne Aussehen
+  lib/theme.ts           Design-Tokens → CSS-Variablen (die Nahtstelle)
+  layouts/BaseLayout     Meta, JSON-LD, hreflang, demo/live
+  components/            Motor: DemoBar, Navigation, Formular
+                         + die portierten Sektionen des Kunden
+  pages/                 eine Datei je Unterseite
+api/ · functions/        Formular-Endpunkt (Vercel bzw. Cloudflare)
+scripts/                 check, schrift, karte, platzhalter, stock
+vorlagen/                Design-Briefing für Claude Design
+```
+
+**Die Referenz-Seite** (`src/pages/index.astro`) zeigt die Bauweise und macht den
+Standard vorführbar. Beim Kunden wird sie ersetzt.
+
+---
+
+## Deploy
+
+**Vercel** (Standard): `npx vercel` für die Vorschau, `npx vercel --prod` für live.
+`vercel.json` und `_headers` erzeugt der Build **automatisch** aus dem `mode` –
+dort ist nichts von Hand zu ändern.
+
+**Cloudflare Pages**: funktioniert ebenso – der Formular-Endpunkt liegt doppelt
+(`api/` für Vercel, `functions/api/` für Cloudflare).
+
+Ein Klon ist **eigenständig**: Es gibt keine Updates vom Template zurück in
+Kundenprojekte. Das Template bleibt neutral und ist nur der Startpunkt.
+
+---
+
+## Wenn die Firma umbenennt (White-Label)
+
+Das Kanbuk-Branding steckt an genau diesen Stellen – bei einer Umbenennung nur
+diese anpassen:
+
+| Stelle | Was |
+| --- | --- |
+| `src/components/DemoBar.astro` | Wortmarke, Zeichen (SVG) und Markenfarben des Vorschau-Balkens |
+| `scripts/check.mjs` | `istTemplate`-Vergleich: `pkg.name === 'kanbuk-website-template'` |
+| `package.json` | Template-Name + Konvention `kanbuk-<kunde>` beim Port |
+| `src/lib/verhalten/einwilligung.ts` | localStorage-Schlüssel `kanbuk-einwilligung` |
+| `astro.config.ts` / `scripts/karte.mjs` | interner Integrationsname / User-Agent (rein technisch) |

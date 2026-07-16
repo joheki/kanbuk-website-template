@@ -1,0 +1,155 @@
+---
+/**
+ * Einwilligung – MOTOR-Baustein.
+ *
+ * Rendert NUR etwas, wenn in content.config.ts -> dienste zustimmungspflichtige
+ * Dienste stehen. Ohne sie: kein Banner, keine geparkten Skripte, keine Cookies.
+ * Das ist der Normalfall – und ein Verkaufsargument.
+ *
+ * Mit Diensten gilt strikt Opt-in: Die Skripte liegen als type="text/plain" im
+ * HTML und werden vom Browser NICHT ausgeführt. Erst nach dem Ja tauscht
+ * src/lib/verhalten/einwilligung.ts sie gegen echte <script>-Elemente.
+ *
+ * Das AUSSEHEN kommt aus dem Design – die Klassen hier sind nur Haken.
+ * Wird im BaseLayout automatisch eingebunden.
+ */
+import { site, brauchtEinwilligung } from '../../content.config';
+
+const zeigen = brauchtEinwilligung(site);
+const dienste = site.dienste;
+
+/** Kategorien, die tatsächlich vorkommen (ohne "notwendig"). */
+const kategorien = [...new Set(dienste.map((d) => d.kategorie))].filter((k) => k !== 'notwendig');
+
+const BESCHRIFTUNG: Record<string, string> = {
+  funktional: 'Komfort',
+  statistik: 'Statistik',
+  marketing: 'Marketing',
+};
+
+const t =
+  site.ansprache === 'du'
+    ? {
+        titel: 'Deine Entscheidung',
+        text: 'Wir verwenden zusätzliche Dienste. Die laden erst, wenn du zustimmst – vorher passiert nichts.',
+        alle: 'Alle akzeptieren',
+        nurNotwendig: 'Nur notwendige',
+        auswahl: 'Auswahl speichern',
+        mehr: 'Details in der Datenschutzerklärung',
+      }
+    : {
+        titel: 'Ihre Entscheidung',
+        text: 'Wir verwenden zusätzliche Dienste. Die laden erst, wenn Sie zustimmen – vorher passiert nichts.',
+        alle: 'Alle akzeptieren',
+        nurNotwendig: 'Nur notwendige',
+        auswahl: 'Auswahl speichern',
+        mehr: 'Details in der Datenschutzerklärung',
+      };
+---
+
+{zeigen && (
+  <>
+    {/* Der Banner. Startet versteckt; das Skript zeigt ihn nur, wenn noch
+        keine Entscheidung vorliegt – so blitzt er nie unnötig auf. */}
+    <div
+      class="einwilligung"
+      data-einwilligung-banner
+      hidden
+      role="dialog"
+      aria-modal="false"
+      aria-labelledby="einwilligung-titel"
+    >
+      <div class="einwilligung__inhalt">
+        <h2 class="einwilligung__titel" id="einwilligung-titel">{t.titel}</h2>
+        <p class="einwilligung__text">{t.text}</p>
+
+        {kategorien.length > 1 && (
+          <div class="einwilligung__kategorien">
+            {kategorien.map((k) => (
+              <label class="einwilligung__kategorie">
+                <input type="checkbox" data-einwilligung-kategorie={k} />
+                <span>{BESCHRIFTUNG[k] ?? k}</span>
+              </label>
+            ))}
+          </div>
+        )}
+
+        <div class="einwilligung__aktionen">
+          <button type="button" class="einwilligung__knopf" data-einwilligung-alle>{t.alle}</button>
+          <button type="button" class="einwilligung__knopf" data-einwilligung-nur-notwendig>{t.nurNotwendig}</button>
+          {kategorien.length > 1 && (
+            <button type="button" class="einwilligung__knopf" data-einwilligung-auswahl>{t.auswahl}</button>
+          )}
+        </div>
+
+        <a class="einwilligung__mehr" href="/datenschutz">{t.mehr}</a>
+      </div>
+    </div>
+
+    {/* Geparkte Skripte: type="text/plain" -> der Browser führt sie NICHT aus.
+        Erst nach der Zustimmung werden sie zu echten <script>. */}
+    {dienste.map((d) =>
+      d.quelle ? (
+        <script type="text/plain" data-einwilligung={d.kategorie} src={d.quelle} async />
+      ) : d.skript ? (
+        <script type="text/plain" data-einwilligung={d.kategorie} set:html={d.skript} />
+      ) : null,
+    )}
+  </>
+)}
+
+<style>
+  /* Nur Positionierung und Sicherheit – das Aussehen macht das Design.
+     Ohne jede Gestaltung wäre der Banner unbenutzbar, deshalb dieses Minimum. */
+  .einwilligung {
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 200;
+    background: var(--farbe-flaeche, var(--farbe-hintergrund));
+    border-top: 1px solid color-mix(in srgb, var(--farbe-text) 20%, transparent);
+    padding: var(--raum-s) var(--gutter);
+  }
+  .einwilligung[hidden] {
+    display: none;
+  }
+  .einwilligung__inhalt {
+    width: min(100%, var(--container));
+    margin-inline: auto;
+    display: grid;
+    gap: var(--raum-2xs);
+  }
+  .einwilligung__titel {
+    font-size: var(--schrift-l);
+  }
+  .einwilligung__text {
+    font-size: var(--schrift-s);
+    max-width: 70ch;
+  }
+  .einwilligung__kategorien {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--raum-s);
+    font-size: var(--schrift-s);
+  }
+  .einwilligung__kategorie {
+    display: flex;
+    align-items: center;
+    gap: var(--raum-3xs);
+  }
+  .einwilligung__aktionen {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--raum-2xs);
+    margin-top: var(--raum-3xs);
+  }
+  .einwilligung__knopf {
+    padding: var(--raum-2xs) var(--raum-s);
+    border: 1px solid var(--farbe-primaer);
+    border-radius: var(--radius);
+    font-size: var(--schrift-s);
+  }
+  .einwilligung__mehr {
+    font-size: var(--schrift-xs);
+  }
+</style>

@@ -1,0 +1,18 @@
+/* =========================================================================
+ *  Lokale Schriften – PRO KUNDE erzeugt, nicht vom Template vorgegeben.
+ * =========================================================================
+ *  Das Template bringt bewusst KEINE Schriften mit: Welche gebraucht wird,
+ *  entscheidet das Design (Claude Design). Sobald sie feststeht:
+ *
+ *      npm run schrift -- --familie "<Name laut fonts.google.com>"
+ *      npm run schrift -- --familie "<Name>" --schnitte 300,400,600,700
+ *
+ *  Das Skript lädt sie nach public/fonts/ und trägt die @font-face-Regeln
+ *  hier ein. Danach in content.config.ts -> design.schriften verwenden.
+ *
+ *  NIEMALS eine CDN-Schrift verlinken (fonts.googleapis.com o. Ä.):
+ *  externe Requests sind verboten – fremder Server, DSGVO, Ladezeit.
+ *  Das Prüf-Tor (npm run check) lässt sie nicht durch.
+ *
+ *  Die Referenz-Seite nutzt Systemschriften und braucht deshalb nichts davon.
+ * ========================================================================= */

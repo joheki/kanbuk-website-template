@@ -1,0 +1,238 @@
+---
+/**
+ * =============================================================================
+ *  REFERENZ-SEITE – wird beim Kunden vollständig ersetzt
+ * =============================================================================
+ *  Zweck: (1) `npm run dev` läuft sofort, (2) der technische Standard ist
+ *  sichtbar, (3) die Verhaltens-Bausteine sind live vorführbar.
+ *
+ *  Sie zeigt, wie eine portierte Seite aussieht:
+ *   - jede Sektion eine eigene Komponente unter src/components/
+ *   - AUSSCHLIESSLICH Tokens (var(--raum-*), var(--schrift-*), var(--farbe-*))
+ *   - keine feste Pixelbreite, kein Farbwert im Markup
+ *
+ *  Beim Kunden: diesen Ordner leeren und die Sektionen aus dem Claude Design
+ *  portieren. Siehe CLAUDE.md -> „Portier-Rezept".
+ * =============================================================================
+ */
+import { Image } from 'astro:assets';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Navigation from '../components/Navigation.astro';
+import Formular from '../components/Formular.astro';
+import { site } from '../../content.config';
+import { bild } from '../lib/bilder';
+
+/* Die Referenz benutzt bewusst ein echtes Bild aus fotos/: So wird die
+   Bild-Pipeline bei JEDEM Build durchlaufen. Wäre hier kein Bild, würde ein
+   kaputter Bildpfad still bleiben, bis er beim ersten Kunden auffällt. */
+const heroBild = bild('hero.jpg');
+---
+
+<BaseLayout pfad="/">
+  <header class="kopf">
+    <div class="container kopf__inner">
+      <a class="kopf__marke" href="/">{site.betrieb.name}</a>
+      <Navigation aktuell="/" />
+    </div>
+  </header>
+
+  <main id="inhalt">
+    <section class="hero">
+      <div class="container">
+        <p class="hero__eyebrow">{site.betrieb.claim}</p>
+        <h1 class="hero__titel">{site.betrieb.name}</h1>
+        <p class="hero__text">{site.betrieb.kurzbeschreibung}</p>
+      </div>
+
+      {heroBild && (
+        <div class="hero__bild">
+          <Image
+            src={heroBild}
+            alt="Referenz-Bild: zeigt, dass die Bild-Pipeline aus fotos/ funktioniert"
+            widths={[480, 768, 1200, 1800]}
+            sizes="100vw"
+            format="webp"
+            quality={72}
+            loading="eager"
+            fetchpriority="high"
+          />
+        </div>
+      )}
+    </section>
+
+    <section class="block" data-reveal>
+      <div class="container">
+        <h2>Was der Motor liefert</h2>
+        <ul class="liste">
+          <li><strong>Meta je Seite</strong> – Titel, Description, Canonical, OG-Bild, JSON-LD</li>
+          <li><strong>Fluide Skala</strong> – jede Länge ein Token, responsiv von 350 bis 1440 px</li>
+          <li><strong>Verhaltens-Bausteine</strong> – Tabs, Filter, Slider, Akkordeon, Lightbox, Mobilmenü, Vergleich</li>
+          <li><strong>Formular-Motor</strong> – Felder aus der Config, Honeypot, Resend</li>
+          <li><strong>demo/live</strong> – ein Wort schaltet Balken, Formular, tel:, Indexierung</li>
+          <li><strong>Prüf-Tor</strong> – <code>npm run check</code> lässt Fehlendes nicht durch</li>
+        </ul>
+      </div>
+    </section>
+
+    {/* Akkordeon – nativ <details>, funktioniert ohne JS. */}
+    <section class="block block--getoent" data-reveal>
+      <div class="container">
+        <h2>Verhaltens-Baustein: Akkordeon</h2>
+        <div class="akkordeon" data-akkordeon data-akkordeon-exklusiv>
+          <details>
+            <summary>Wo kommt das Design her?</summary>
+            <div class="akkordeon__inhalt">
+              <p>Aus Claude Design. Der Motor gibt Struktur, Technik und Standard vor – nie das Aussehen.</p>
+            </div>
+          </details>
+          <details>
+            <summary>Wo stehen die Inhalte?</summary>
+            <div class="akkordeon__inhalt">
+              <p>Was der Motor braucht (Betriebsdaten, Meta, Preisliste, Recht), steht in content.config.ts. Was man sieht, kommt aus dem Design.</p>
+            </div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" data-reveal>
+      <div class="container container--schmal">
+        <h2>Formular-Motor</h2>
+        <p class="block__intro">
+          Die Felder kommen aus der Config. In der Vorschau ist das Formular bewusst deaktiviert.
+        </p>
+        <Formular id="kontakt" class="formular--referenz" />
+      </div>
+    </section>
+  </main>
+
+  <footer class="fuss">
+    <div class="container fuss__inner">
+      <p>© {new Date().getFullYear()} {site.betrieb.name}</p>
+      <nav aria-label="Rechtliches">
+        <a href="/impressum">Impressum</a>
+        <a href="/datenschutz">Datenschutz</a>
+      </nav>
+    </div>
+  </footer>
+</BaseLayout>
+
+<style>
+  /* So sieht portierter Code aus: NUR Tokens, keine festen Pixel, keine Farbwerte. */
+
+  .kopf {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: color-mix(in srgb, var(--farbe-hintergrund) 92%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid color-mix(in srgb, var(--farbe-text) 12%, transparent);
+  }
+  .kopf__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--raum-s);
+    padding-block: var(--raum-xs);
+  }
+  .kopf__marke {
+    font-family: var(--font-ueberschrift);
+    font-size: var(--schrift-l);
+    text-decoration: none;
+  }
+
+  .hero {
+    padding-block: var(--raum-3xl) var(--raum-2xl);
+  }
+  .hero__eyebrow {
+    font-size: var(--schrift-s);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--farbe-primaer);
+    margin-bottom: var(--raum-2xs);
+  }
+  .hero__titel {
+    font-size: var(--schrift-4xl);
+  }
+  .hero__text {
+    margin-top: var(--raum-s);
+    max-width: 44ch;
+    font-size: var(--schrift-l);
+  }
+  .hero__bild {
+    margin-top: var(--raum-l);
+  }
+  .hero__bild :global(img) {
+    width: 100%;
+    aspect-ratio: 21 / 9;
+    object-fit: cover;
+  }
+
+  .block {
+    padding-block: var(--raum-2xl);
+  }
+  .block--getoent {
+    background: var(--farbe-flaeche, color-mix(in srgb, var(--farbe-text) 4%, var(--farbe-hintergrund)));
+  }
+  .block h2 {
+    font-size: var(--schrift-2xl);
+    margin-bottom: var(--raum-m);
+  }
+  .block__intro {
+    margin-bottom: var(--raum-m);
+    max-width: 60ch;
+  }
+
+  .liste {
+    display: grid;
+    gap: var(--raum-xs);
+    /* min() verhindert Überlauf auf schmalen Screens – Pflichtmuster für Grids. */
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    list-style: none;
+  }
+  .liste li {
+    padding: var(--raum-s);
+    border: 1px solid color-mix(in srgb, var(--farbe-text) 14%, transparent);
+    border-radius: var(--radius);
+  }
+
+  .akkordeon {
+    display: grid;
+    gap: var(--raum-2xs);
+    max-width: 60ch;
+  }
+  .akkordeon details {
+    border-bottom: 1px solid color-mix(in srgb, var(--farbe-text) 14%, transparent);
+  }
+  .akkordeon summary {
+    cursor: pointer;
+    padding-block: var(--raum-xs);
+    font-weight: 600;
+  }
+  .akkordeon__inhalt {
+    padding-bottom: var(--raum-xs);
+    overflow: hidden;
+  }
+
+  .formular--referenz {
+    display: grid;
+    gap: var(--raum-s);
+    max-width: 40rem;
+  }
+
+  .fuss {
+    padding-block: var(--raum-m);
+    border-top: 1px solid color-mix(in srgb, var(--farbe-text) 12%, transparent);
+    font-size: var(--schrift-s);
+  }
+  .fuss__inner {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--raum-xs) var(--raum-m);
+  }
+  .fuss nav {
+    display: flex;
+    gap: var(--raum-s);
+  }
+</style>

@@ -1,0 +1,176 @@
+---
+/**
+ * BaseLayout – das Grundgerüst jeder Seite. HIER sitzt der halbe Motor.
+ *
+ * Leistet je Seite:
+ *  - eigener Titel, eigene Description, eigene Canonical, eigenes OG-Bild
+ *  - Design-Tokens als CSS-Variablen (Nahtstelle zum Design)
+ *  - JSON-LD LocalBusiness inkl. maschinenlesbarer Öffnungszeiten
+ *  - hreflang, wenn mehrsprachig
+ *  - demo-Modus: noindex (Meta; der HTTP-Header kommt über _headers/vercel.json)
+ *  - startet die Verhaltens-Bausteine
+ *
+ * Das AUSSEHEN kommt aus dem Design – hier steht bewusst kein Layout.
+ */
+import '../styles/fonts.css';
+import '../styles/global.css';
+import { site, jsonLdTyp } from '../../content.config';
+import { cssVariablen } from '../lib/theme';
+import DemoBar from '../components/DemoBar.astro';
+import Einwilligung from '../components/Einwilligung.astro';
+
+interface Props {
+  /** Pfad dieser Seite, z. B. '/speisekarte'. Muss in config.seiten stehen. */
+  pfad?: string;
+  /** Überschreibt den Titel aus der Seiten-Config (selten nötig). */
+  titel?: string;
+  /** Überschreibt die Description aus der Seiten-Config. */
+  beschreibung?: string;
+}
+
+const { pfad = '/', titel, beschreibung } = Astro.props;
+
+const seite = site.seiten.find((s) => s.pfad === pfad);
+if (!seite && !titel) {
+  throw new Error(
+    `Seite "${pfad}" fehlt in content.config.ts -> seiten. Ohne Eintrag gibt es keine Meta-Angaben (Titel, Description) – das lässt "npm run check" nicht durch.`,
+  );
+}
+
+const istDemo = site.mode === 'demo';
+
+const seitenTitel = titel ?? seite!.metaTitel;
+const vollerTitel =
+  pfad === '/' ? `${site.betrieb.name} – ${site.betrieb.claim}` : `${seitenTitel} | ${site.betrieb.name}`;
+const desc = beschreibung ?? seite?.metaBeschreibung ?? site.betrieb.kurzbeschreibung;
+const canonical = new URL(pfad, site.domain).href;
+const ogBild = new URL(seite?.ogBild ? `/${seite.ogBild}` : site.ogBild, site.domain).href;
+const rootStyle = `:root { ${cssVariablen(site)} }`;
+
+const mehrsprachig = site.sprachen.length > 1;
+
+/** Kurzcodes -> volle schema.org-Tagesnamen. Google versteht NUR die vollen
+    Namen ("Monday") – mit "Mo" würden die Öffnungszeiten still ignoriert. */
+const TAG_LD: Record<string, string> = {
+  Mo: 'Monday', Tu: 'Tuesday', We: 'Wednesday', Th: 'Thursday',
+  Fr: 'Friday', Sa: 'Saturday', Su: 'Sunday',
+};
+
+/** Öffnungszeiten maschinenlesbar für JSON-LD (nur vollständige Angaben). */
+const oeffnungszeitenLd = site.betrieb.oeffnungszeiten
+  .filter((o) => o.tageISO?.length && o.vonISO && o.bisISO)
+  .map((o) => ({
+    '@type': 'OpeningHoursSpecification',
+    dayOfWeek: o.tageISO!.map((t) => TAG_LD[t] ?? t),
+    opens: o.vonISO,
+    closes: o.bisISO,
+  }));
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': jsonLdTyp(site.branche),
+  '@id': site.domain,
+  name: site.betrieb.name,
+  description: site.betrieb.kurzbeschreibung,
+  url: site.domain,
+  telephone: site.betrieb.telefon,
+  email: site.betrieb.email,
+  image: ogBild,
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: site.betrieb.adresse.strasse,
+    postalCode: site.betrieb.adresse.plz,
+    addressLocality: site.betrieb.adresse.ort,
+    addressCountry: site.betrieb.adresse.land ?? 'AT',
+  },
+  ...(oeffnungszeitenLd.length > 0 && { openingHoursSpecification: oeffnungszeitenLd }),
+  ...(site.betrieb.socialLinks.length > 0 && {
+    sameAs: site.betrieb.socialLinks.map((s) => s.url),
+  }),
+};
+---
+
+<!doctype html>
+<html lang="de-AT">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{vollerTitel}</title>
+    <meta name="description" content={desc} />
+    <link rel="canonical" href={canonical} />
+
+    {/* demo = Vorschau: nie indexieren. Die 404 ist AUCH live nie indexierbar.
+        Der HTTP-Header kommt im demo-Modus zusätzlich. */}
+    <meta
+      name="robots"
+      content={istDemo || pfad === '/404' ? 'noindex, nofollow' : 'index, follow'}
+    />
+
+    {mehrsprachig && site.sprachen.map((s) => (
+      <link
+        rel="alternate"
+        hreflang={s}
+        href={new URL(s === 'de' ? pfad : `/${s}${pfad}`, site.domain).href}
+      />
+    ))}
+    {mehrsprachig && <link rel="alternate" hreflang="x-default" href={canonical} />}
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={vollerTitel} />
+    <meta property="og:description" content={desc} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:locale" content="de_AT" />
+    <meta property="og:image" content={ogBild} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={vollerTitel} />
+    <meta name="twitter:description" content={desc} />
+    <meta name="twitter:image" content={ogBild} />
+
+    <meta name="theme-color" content={site.design.farben.primaer} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+    {/* Design-Tokens: die Nahtstelle zwischen Claude Design und Motor. */}
+    <style set:html={rootStyle}></style>
+  </head>
+  <body>
+    {istDemo && <DemoBar />}
+    <a class="skip-link" href="#inhalt">Zum Inhalt springen</a>
+    <slot />
+
+    {/* Rendert nur, wenn zustimmungspflichtige Dienste konfiguriert sind.
+        Normalfall: nichts davon -> die Seite bleibt cookiefrei. */}
+    <Einwilligung />
+
+    <script>
+      import { verhaltenStarten } from '../lib/verhalten';
+
+      document.documentElement.classList.add('js');
+      verhaltenStarten();
+
+      // Dezentes Einblenden (progressive enhancement, ohne JS voll sichtbar).
+      const ziele = document.querySelectorAll('[data-reveal]');
+      const reduziert = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduziert || !('IntersectionObserver' in window)) {
+        ziele.forEach((el) => el.classList.add('ist-sichtbar'));
+      } else {
+        const io = new IntersectionObserver(
+          (eintraege) => {
+            eintraege.forEach((e) => {
+              if (e.isIntersecting) {
+                e.target.classList.add('ist-sichtbar');
+                io.unobserve(e.target);
+              }
+            });
+          },
+          { rootMargin: '0px 0px -8% 0px', threshold: 0.05 },
+        );
+        ziele.forEach((el) => io.observe(el));
+      }
+    </script>
+  </body>
+</html>
