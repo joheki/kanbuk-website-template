@@ -15,6 +15,15 @@ Zuerst klären, welcher Fall vorliegt (kurz nachfragen, wenn unklar):
 Vercel-Zugang vorab prüfen: `npx vercel whoami` – falls nicht eingeloggt, den
 Nutzer durch `npx vercel login` führen (Firmen- bzw. eigenes Konto).
 
+Vor JEDEM Deploy (Demo wie Live) läuft die **komplette Launch-Prüfung**:
+1. `npm run check` grün (Technik, SEO, Recht, Sicherheits-Header)
+2. `npm run sicht` grün (echter Browser: Überlauf, JS-Fehler, kaputte Ressourcen)
+3. **Alle Screenshots in `pruefung/` ansehen** (Read) und visuell beurteilen:
+   Layout, Design-Treue, Rechtschreibung, Vollständigkeit – Details im
+   /port-Skill, Etappe 5
+4. Beim Live-Gang zusätzlich: `npm audit --omit=dev` – Funde mit Schweregrad
+   high/critical stoppen den Launch (dem Nutzer melden)
+
 Vorab immer: **`npm run check` muss grün sein** (baut selbst und prüft den Standard –
 externe Requests, Meta je Seite, Alt-Texte, feste Breiten, mode-Konsistenz).
 Beim Live-Gang zusätzlich `npm run check -- --live` (prüft Rechtstexte-Platzhalter

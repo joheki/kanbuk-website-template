@@ -133,6 +133,7 @@ Details: [CLAUDE.md, Abschnitt 7a](CLAUDE.md).
 | `npm run schrift -- --familie "<Name>"` | Google-Schrift lokal einbetten |
 | `npm run karte -- --adresse "…"` | Statisches Kartenbild statt Maps-Rahmen |
 | `npm run og -- --bild fotos/hero.jpg` | WhatsApp-/Social-Vorschaubild aus einem echten Foto |
+| `npm run sicht` | Sichtprüfung im echten Browser: Screenshots aller Seiten bei 350/768/1440 px + Überlauf-/Fehler-Messung |
 | `npm run platzhalter -- --name "…"` | Textlose Platzhalter + OG-Bild + Favicon (nach `fotos/`) |
 | `npm run stock -- --thema "…"` | Stock-Platzhalter (braucht `PEXELS_API_KEY` in `.env`) |
 

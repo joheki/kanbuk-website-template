@@ -350,7 +350,9 @@ Immer gleich. Details im `/port`-Skill (`.claude/skills/port/SKILL.md`).
 
 1. `npm run check` ist **grün** (baut selbst und prüft die fertige Seite).
 2. `npm run dev` läuft fehlerfrei.
-3. Sichtprüfung bei **350 / 768 / 1440 px**: kein horizontales Scrollen, nichts springt.
+3. `npm run sicht` ist **grün** (echter Browser bei 350/768/1440 px: kein Überlauf,
+   keine JS-Fehler, nichts kaputt) **und die Screenshots in `pruefung/` wurden
+   ANGESEHEN** (Layout, Design-Treue, Rechtschreibung – /port-Skill Etappe 5).
 4. Lighthouse-Ziel **≥ 95** in allen vier Kategorien.
 5. **STAND.md ist aktuell** (Phase, Lücken, Verlaufszeile dieser Sitzung).
 6. Committen und pushen (ein Kunde = ein Repo/Branch).
@@ -387,6 +389,7 @@ keines optimiert wurde.
 | `npm run schrift -- --familie "<Name>"` | Google-Schrift lokal einbetten |
 | `npm run karte -- --adresse "…"` | Statisches Kartenbild (statt Maps-Embed) |
 | `npm run og -- --bild fotos/<hero>.jpg` | OG-Vorschaubild aus echtem Foto (beim Port Pflicht) |
+| `npm run sicht` | **Sichtprüfung im echten Browser** – Screenshots + Überlauf-/Fehler-Messung |
 | `npm run platzhalter -- …` | Textlose Platzhalterbilder + OG + Favicon |
 | `npm run stock -- --thema "…"` | Stock-Platzhalter (braucht `PEXELS_API_KEY`) |
 

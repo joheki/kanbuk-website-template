@@ -181,14 +181,28 @@ wird dabei ersetzt.
 
 ---
 
-## Etappe 5 – Prüfen
+## Etappe 5 – Die Launch-Prüfung (drei Stufen, alle Pflicht)
 
-`npm run check` **muss grün sein.** Er baut selbst und prüft die fertige Seite:
+**1. `npm run check` muss grün sein.** Baut selbst und prüft die fertige Seite:
 externe Requests, Meta je Seite, Alt-Texte, feste Breiten, JSON-LD, Bildgewicht,
-mode-Konsistenz, Referenz-Reste.
+Lesbarkeits-Kontrast, Sicherheits-Header, mode-Konsistenz, Referenz-Reste.
 
-Danach Sichtprüfung bei **350 / 768 / 1440 px**: kein horizontales Scrollen, nichts
-springt, keine überlappenden Sticky-Leisten.
+**2. `npm run sicht` muss grün sein.** Öffnet jede Seite im echten Browser bei
+350/768/1440 px, macht Screenshots nach `pruefung/` und misst: horizontaler
+Überlauf (nennt die schuldigen Elemente), JS-Fehler in der Konsole, kaputte
+Bilder/Ressourcen. (Erster Lauf auf einem Rechner lädt einmalig den Prüf-Browser.)
+
+**3. Die Screenshots ANSEHEN – jede Datei in `pruefung/`, mit Read.** Das Skript
+misst, die Augen urteilen. Prüfe dabei:
+- **Layout:** Überlappungen, abgeschnittene Inhalte, kaputte Abstände, Elemente
+  am falschen Platz, springende Grids zwischen den Breiten
+- **Design-Treue:** entspricht es dem Claude Design (Farben, Schriften, Stimmung)?
+- **Rechtschreibung:** JEDEN sichtbaren Text lesen – österreichisches
+  Standarddeutsch, ß-Schreibung, Ansprache konsistent, keine Tippfehler
+- **Vollständigkeit:** fehlt sichtbar etwas (leere Sektionen, Platzhalter-Reste)?
+
+Jeder Fund wird behoben und die betroffene Stufe wiederholt, bis alles sauber
+ist. Erst dann gilt die Seite als launch-fertig.
 
 ---
 

@@ -28,7 +28,12 @@ function auslieferungsRegeln() {
     },
   ];
   const kopfzeilen = istLive
-    ? sicherheit
+    ? [
+        // HSTS nur live: zwingt Browser dauerhaft auf HTTPS (Vorschau-Domains
+        // sollen keine so langlebige Zusage machen).
+        { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains' },
+        ...sicherheit,
+      ]
     : [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }, ...sicherheit];
 
   return {

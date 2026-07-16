@@ -14,11 +14,15 @@
     "astro": "astro",
     "schrift": "node scripts/schrift.mjs",
     "karte": "node scripts/karte.mjs",
-    "og": "node scripts/og.mjs"
+    "og": "node scripts/og.mjs",
+    "sicht": "node scripts/sicht.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.6.0",
     "astro": "^5.14.1",
     "sharp": "^0.34.4"
+  },
+  "devDependencies": {
+    "playwright": "^1.61.1"
   }
 }

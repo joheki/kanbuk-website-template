@@ -140,6 +140,19 @@ const heroBild = bild('hero.jpg');
     font-size: var(--schrift-l);
     text-decoration: none;
   }
+  /* Die Navigation kommt unstyled aus dem Motor – hier ihr Referenz-Anstrich. */
+  .kopf :global(.navi__liste) {
+    list-style: none;
+    display: flex;
+    gap: var(--raum-s);
+  }
+  .kopf :global(.navi__link) {
+    text-decoration: none;
+    font-size: var(--schrift-s);
+  }
+  .kopf :global(.navi-schalter) {
+    display: none;
+  }
 
   .hero {
     padding-block: var(--raum-3xl) var(--raum-2xl);

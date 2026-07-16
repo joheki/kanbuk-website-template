@@ -442,6 +442,24 @@ if (istLive && /Disallow:\s*\/\s*$/m.test(robots)) {
   fehler('robots.txt sperrt alles, obwohl mode auf "live" steht');
 }
 
+// Sicherheits-Header-Selbstkontrolle: Die Dateien entstehen zwar automatisch,
+// aber Hand-Änderungen oder ein kaputter Build-Hook dürfen nicht still bleiben.
+const headersDatei = join(DIST, '_headers');
+if (existsSync(headersDatei)) {
+  const kopf = readFileSync(headersDatei, 'utf-8');
+  for (const pflicht of ['X-Content-Type-Options', 'Referrer-Policy', 'Permissions-Policy']) {
+    if (!kopf.includes(pflicht)) fehler(`_headers: Sicherheits-Header "${pflicht}" fehlt`);
+  }
+  if (istLive && !kopf.includes('Strict-Transport-Security')) {
+    fehler('_headers: HSTS fehlt, obwohl die Seite live ist');
+  }
+  if (!istLive && !kopf.includes('X-Robots-Tag')) {
+    fehler('_headers: X-Robots-Tag fehlt, obwohl mode "demo" ist – die Vorschau wäre indexierbar');
+  }
+} else {
+  fehler('dist/_headers fehlt – der Build-Hook in astro.config.ts läuft nicht');
+}
+
 // ---------------------------------------------------------------------------
 //  8. REFERENZ-RESTE & PLATZHALTER (Lücken-Inventar)
 // ---------------------------------------------------------------------------
