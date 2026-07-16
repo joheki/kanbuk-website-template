@@ -51,7 +51,15 @@ Dann (bzw. im Terminal-Weg: Ordner in VS Code öffnen, Claude Code starten):
 Ergebnis: **die fertige Seite** – echte Unterseiten, vollständig responsiv, SEO,
 sicher, cookiefrei. Nur ohne Zugänge. Dann `/deploy` für die Vorschau-Domain.
 
-### 3 · Kunde bucht — *~15 min*
+> **Gilt für jedes Geschäftsmodell:** `demo`/`live` sind technische Modi, keine
+> Vertriebsstufen. Beim Demo-Verkauf ist die Vorschau die Verkaufs-Demo; beim
+> Direktkauf ist sie die **Abnahme-Vorschau** vor der Freigabe. Und weil jedes
+> Kundenprojekt ein eigenständiges Repo ist, lässt es sich bei einem Vollkauf
+> komplett übertragen (Repo, Hosting, Domain auf Konten des Kunden).
+> Grenzen des Motors: kein CMS/Selbst-Bearbeiten, Shop/Buchung/Blog baut der
+> jeweilige Projekt-Chat bei Bedarf auf dem Motor auf (CLAUDE.md 7a).
+
+### 3 · Kunde bucht (bzw. gibt frei) — *~15 min*
 
 `STAND.md` im Kundenordner öffnen – dort steht, was noch offen ist. Dann nur noch
 drei Dinge, kein Basteln an Technik:
