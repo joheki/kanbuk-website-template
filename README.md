@@ -37,7 +37,12 @@ cd kanbuk-kunden/<kunde>
 npm install
 ```
 
-Ordner in VS Code öffnen, Claude Code starten:
+**Ohne Terminal geht es auch:** leeren Kundenordner in VS Code öffnen, Claude Code
+starten und schreiben: „Hol dir das Template von joheki/kanbuk-website-template und
+setze dann dieses Design um: <Claude-Design-Link>" – Claude erledigt den Rest und
+stellt am Anfang einmal gebündelt die nötigen Fragen (Kundendaten, Zusätze).
+
+Dann (bzw. im Terminal-Weg: Ordner in VS Code öffnen, Claude Code starten):
 
 ```
 /port https://claude.ai/design/p/<projekt-id>
@@ -158,8 +163,12 @@ dort ist nichts von Hand zu ändern.
 **Cloudflare Pages**: funktioniert ebenso – der Formular-Endpunkt liegt doppelt
 (`api/` für Vercel, `functions/api/` für Cloudflare).
 
-Ein Klon ist **eigenständig**: Es gibt keine Updates vom Template zurück in
-Kundenprojekte. Das Template bleibt neutral und ist nur der Startpunkt.
+Ein Klon ist **eigenständig – technisch garantiert**: `degit` kopiert nur Dateien,
+ohne Git-Historie und ohne Verweis zurück. Ein Kundenprojekt ist also **kein Fork und
+kein Branch** des Templates – auf GitHub ist nirgends sichtbar, dass es aus diesem
+Template entstanden ist. Das private Kunden-Repo (entsteht bei Buchung über `/deploy`)
+ist ein komplett unabhängiges Repository. Es gibt auch keine Updates vom Template
+zurück in Kundenprojekte – das Template ist nur der Startpunkt.
 
 ---
 

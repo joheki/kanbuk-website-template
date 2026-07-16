@@ -49,7 +49,9 @@ bekommt ein neuer Mitarbeiter vom Inhaber).
    STAND.md-Punkten und Platzhaltern).
 3. **Formular-Versand:** im Vercel-Dashboard (bzw. `vercel env add`) `RESEND_API_KEY` und
    `CONTACT_FROM` hinterlegen. `npm run build` muss weiter fehlerfrei sein.
-4. **Privates GitHub-Repo anlegen + hochladen** (Repo-Name = Ordnername des Kunden):
+4. **Privates GitHub-Repo anlegen + hochladen** (Repo-Name = Ordnername des Kunden).
+   Das wird ein **eigenständiges, privates Repo** – kein Fork, kein Branch des
+   Templates, keine öffentlich sichtbare Verbindung dorthin:
    ```bash
    git init -b main   # falls noch kein Repo
    gh repo create <kunde-ordnername> --private --source=. --remote=origin --push
