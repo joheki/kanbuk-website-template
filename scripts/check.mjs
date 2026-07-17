@@ -581,14 +581,51 @@ if (istLive || nurLive) {
   // Kanbuk-Signatur: Der dezente Footer-Backlink auf kanbuk.com ist Teil des
   // Geschäftsmodells – jede live geschaltete Kundenseite trägt ihn. Baustein:
   // <Signatur /> in der Fußzeile des Kunden-Designs (src/components/Signatur.astro).
+  // Geprüft wird nicht nur DASS der Link da ist, sondern auch WIE:
+  //   – Anker muss die Marke tragen („Kanbuk"; bei Logo-Link zählt img-alt)
+  //   – kein rel="nofollow/sponsored/ugc" (würde den Link still entwerten)
+  //   – kein Money-Keyword als Anker (seitenweit über alle Kunden = Link-Spam)
+  const MONEY_ANKER = /(webdesign|werbeagentur|grafikdesign|marketing|seo)[-\s]*(agentur\s*)?(wien|österreich|oesterreich|austria)/i;
   for (const f of htmlDateien) {
     const name = kurz(f);
     if (name === '404.html') continue;
-    if (!/href=["']https:\/\/(?:www\.)?kanbuk\.com/i.test(readFileSync(f, 'utf-8'))) {
+    const html = readFileSync(f, 'utf-8');
+    const treffer = [
+      ...html.matchAll(/<a\b[^>]*href=["']https:\/\/(?:www\.)?kanbuk\.com[^"']*["'][^>]*>([\s\S]*?)<\/a>/gi),
+    ];
+    if (treffer.length === 0) {
       fehler(
         `${name}: Kanbuk-Signatur fehlt.\n` +
           `    <Signatur /> gehört in die Fußzeile – der Backlink ist Live-Pflicht.`,
       );
+      continue;
+    }
+    if (treffer.length > 1) {
+      warnung(`${name}: ${treffer.length} Links auf kanbuk.com – einer pro Seite genügt (mehr wirkt gestellt).`);
+    }
+    for (const [ganzerTag, inhalt] of treffer) {
+      if (/\brel=["'][^"']*(nofollow|sponsored|ugc)/i.test(ganzerTag)) {
+        fehler(
+          `${name}: Die Kanbuk-Signatur ist per rel="nofollow/sponsored/ugc" entwertet.\n` +
+            `    Der Backlink muss followed sein – rel darf höchstens "noopener" enthalten.`,
+        );
+      }
+      // Sichtbarer Text; bei reinem Logo-Link zählt der alt-Text des Bildes.
+      const anker = (
+        inhalt.replace(/<img\b[^>]*\balt=["']([^"']*)["'][^>]*>/gi, ' $1 ').replace(/<[^>]+>/g, ' ')
+      ).replace(/\s+/g, ' ').trim();
+      if (!/kanbuk/i.test(anker)) {
+        fehler(
+          `${name}: Signatur-Anker „${anker.slice(0, 40)}" trägt die Marke nicht.\n` +
+            `    Der Linktext muss „Kanbuk" enthalten (Marken-Anker, nie Keyword-Anker).`,
+        );
+      }
+      if (MONEY_ANKER.test(anker)) {
+        fehler(
+          `${name}: Signatur-Anker „${anker.slice(0, 40)}" ist ein Money-Keyword.\n` +
+            `    Seitenweite Keyword-Anker wertet Google als Link-Spam – Marken-Text verwenden.`,
+        );
+      }
     }
   }
 }

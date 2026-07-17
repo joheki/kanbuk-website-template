@@ -201,7 +201,10 @@ wird dabei ersetzt.
   in diese Optik kleiden – nie Buchstaben („IG") als Icon-Ersatz stehen lassen.
 - **Die Fußzeile bekommt `<Signatur />`** (dezenter Kanbuk-Backlink, neben © und
   Rechtslinks). Das ist Geschäftsmodell, keine Deko – das Prüf-Tor blockt bei
-  `--live` jede Seite ohne Signatur. Text anpassbar (`text="…"`), Marke bleibt.
+  `--live` jede Seite ohne Signatur. Den Ankertext wählt der Baustein selbst
+  (markenbasierte Rotation, stabil je Kunde) – `text="…"` nur setzen, wenn es
+  einen Grund gibt, und dann IMMER mit „Kanbuk" im Text (das Tor prüft Anker,
+  rel und Money-Keywords).
 - **Rechtsseiten sind kein Sonderbereich:** Sobald Kopf- und Fußzeile des Kunden
   gebaut sind, beide in `src/layouts/RechtsLayout.astro` einbinden (Kopf + Fuss
   um den Textblock, Zurück-Link und Mini-Footer entfernen). Impressum und

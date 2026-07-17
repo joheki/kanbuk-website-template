@@ -14,12 +14,30 @@
  * Absichtlich MARKEN-Anker („Kanbuk"), kein Keyword-Anker („Webdesign Wien"):
  * seitenweite Footer-Links mit Keyword-Text wertet Google als Link-Spam.
  * Der Markenname ist natürlich, unauffällig – und zählt trotzdem.
+ *
+ * ANKER-ROTATION: Ohne text-Prop wählt der Baustein DETERMINISTISCH eine
+ * markenbasierte Variante – berechnet aus der Kundendomain. Dadurch ist der
+ * Anker pro Kunde für immer stabil (ein je Build wechselnder Text wäre selbst
+ * ein Spam-Signal), variiert aber über die Kundschaft hinweg. Alle Varianten
+ * tragen die Marke – das Prüf-Tor lehnt jeden Anker ohne „Kanbuk" ab.
  */
+import { site } from '../../content.config';
+
 interface Props {
   text?: string;
   class?: string;
 }
-const { text = 'Website von Kanbuk', class: klasse } = Astro.props;
+
+const VARIANTEN = [
+  'Website von Kanbuk',
+  'Webdesign: Kanbuk',
+  'Erstellt von Kanbuk',
+  'Eine Website von Kanbuk',
+];
+const schluessel = `${site.domain ?? ''}${site.betrieb.name ?? ''}`;
+let summe = 0;
+for (const zeichen of schluessel) summe = (summe + zeichen.charCodeAt(0)) % 9973;
+const { text = VARIANTEN[summe % VARIANTEN.length], class: klasse } = Astro.props;
 ---
 
 <a class:list={['signatur', klasse]} href="https://kanbuk.com" target="_blank" rel="noopener">
