@@ -46,7 +46,12 @@ Für Vorschau-Demos wird **kein** GitHub-Repo angelegt – direkt zu Vercel:
 2. `npx vercel` ausführen. Beim ersten Mal führt Vercel durch Login + Projekt-Setup
    (Framework „Astro" wird erkannt, Output `dist`).
 3. Für die teilbare URL: `npx vercel --prod`.
-4. Die URL an den Nutzer geben. Keine Umgebungsvariablen nötig (Formular ist im Demo aus).
+4. **Marken-Adresse anbinden** (Adress-Stufen, CLAUDE.md Abschnitt 7):
+   `npx vercel domains add <kunde>.kanbuk.com <projektname>` – als
+   **Projekt-Domain**, nie per `alias set` (ein Alias landet hinter dem
+   Vercel-Zugriffsschutz und zeigt Fremden eine Anmeldemaske). Danach die
+   Adresse selbst abrufen: Sie muss ohne Login mit HTTP 200 antworten.
+5. Die URL an den Nutzer geben. Keine Umgebungsvariablen nötig (Formular ist im Demo aus).
 
 **Welche URL man dem Lead schickt:** Ist im Vercel-Team „Deployment Protection"
 aktiv, ist NUR der kurze Alias öffentlich (`https://<projekt>.vercel.app`) – die
@@ -84,7 +89,11 @@ bekommt ein neuer Mitarbeiter vom Inhaber).
    Das gibt Backup + Verlauf; bei jeder späteren Änderung genügt `git add -A && git commit && git push`.
 5. **Live deployen:** `npx vercel --prod`. (Optional im Vercel-Dashboard das GitHub-Repo
    verbinden, dann deployt jeder `git push` automatisch neu.)
-6. Live-URL / Domain an den Nutzer.
+6. **Echte Kunden-Domain verbinden:** `npx vercel domains add <kundendomain> <projektname>`.
+   Zeigt die Ausgabe nötige DNS-Einträge, dem Nutzer eine einfache
+   Klick-Anleitung für den Domain-Anbieter des Kunden mitgeben. Die
+   `<kunde>.kanbuk.com`-Abnahme-Adresse kann bleiben oder entfernt werden.
+7. Live-URL an den Nutzer.
 
 ---
 
