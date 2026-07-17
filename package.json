@@ -20,7 +20,8 @@
     "interaktion": "node scripts/interaktion.mjs",
     "bogen": "node scripts/bogen.mjs",
     "holen": "node scripts/holen.mjs",
-    "preisliste": "node scripts/preisliste.mjs"
+    "preisliste": "node scripts/preisliste.mjs",
+    "demo": "node scripts/demo-hosten.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.6.0",

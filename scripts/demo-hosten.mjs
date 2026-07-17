@@ -1,0 +1,201 @@
+/**
+ * =============================================================================
+ *  DEMO-HOSTEN – den Claude-Design-Export als schickbaren Link veröffentlichen
+ * =============================================================================
+ *  Für den Verkaufs-Trichter VOR dem Port: Der Claude-Design-Link selbst ist
+ *  nicht teilbar (braucht Login). Claude Design erzeugt aber im Projekt eine
+ *  Standalone-Datei („<Name> (Standalone).html") – eine einzige Datei mit dem
+ *  kompletten Design. Dieses Skript macht daraus eine hostbare Demo:
+ *
+ *   1. Kanbuk-Vorschau-Leiste (unten, damit sie keinem klebenden Design-Header
+ *      in die Quere kommt)
+ *   2. noindex + robots.txt + X-Robots-Tag – die Demo darf NIE in Google landen
+ *   3. Handy-Hinweis: der Prototyp ist eine 1280-px-Bühne; statt kaputtem
+ *      Layout sieht ein Handy-Besucher eine freundliche Erklärung (wegklickbar)
+ *
+ *  Verwendung (aus dem Template-Ordner):
+ *   1. In Claude Design: die Standalone-Datei des Projekts herunterladen
+ *   2. npm run demo -- --datei "C:/Users/…/Downloads/X (Standalone).html" --kunde "Cafe Sonne"
+ *   3. Das Skript baut ../kanbuk-demos/<kunde>/ und zeigt den Deploy-Befehl
+ *      (mit --deploy führt es ihn direkt aus: npx vercel --prod)
+ *
+ *  Das ist eine DESIGN-Demo (Desktop-Bühne, Prototyp-Klicks) – kein Produkt.
+ *  Die echte, responsive Website entsteht erst beim Port.
+ * =============================================================================
+ */
+import { readFileSync, writeFileSync, mkdirSync, existsSync, statSync } from 'node:fs';
+import { join, resolve, isAbsolute } from 'node:path';
+import { spawnSync } from 'node:child_process';
+
+const args = process.argv.slice(2);
+const wert = (name, standard) => {
+  const i = args.indexOf(`--${name}`);
+  return i >= 0 && args[i + 1] && !args[i + 1].startsWith('--') ? args[i + 1] : standard;
+};
+
+const datei = wert('datei');
+const kunde = wert('kunde');
+const deployen = args.includes('--deploy');
+
+if (!datei || !kunde) {
+  console.error(`
+So wird eine Design-Demo hostbar:
+
+  npm run demo -- --datei "<Pfad zur (Standalone).html>" --kunde "<Betriebsname>"
+  npm run demo -- --datei "…" --kunde "…" --deploy     (lädt direkt zu Vercel hoch)
+
+Die Standalone-Datei erzeugt Claude Design im Projekt ("<Name> (Standalone).html") –
+im Projekt öffnen und herunterladen. Optional: --ziel <ordner> (Standard:
+../kanbuk-demos/<kunde>).`);
+  process.exit(1);
+}
+
+const quelle = isAbsolute(datei) ? datei : resolve(process.cwd(), datei);
+if (!existsSync(quelle)) {
+  console.error(`✗ Datei nicht gefunden: ${quelle}`);
+  process.exit(1);
+}
+
+const slug = kunde
+  .toLowerCase()
+  .replace(/[äöüß]/g, (c) => ({ ä: 'ae', ö: 'oe', ü: 'ue', ß: 'ss' }[c] ?? c))
+  .replace(/[^a-z0-9]+/g, '-')
+  .replace(/^-|-$/g, '');
+const ziel = resolve(process.cwd(), wert('ziel', join('..', 'kanbuk-demos', slug)));
+
+let html = readFileSync(quelle, 'utf-8');
+const groesseMb = (statSync(quelle).size / 1024 / 1024).toFixed(1);
+
+// Plausibilitäts-Warnung: eine echte Standalone-Datei trägt das Design IN sich
+// und ist entsprechend groß. Eine winzige Datei ist meist ein Fehlexport.
+if (statSync(quelle).size < 100 * 1024) {
+  console.warn(`⚠ Die Datei ist nur ${groesseMb} MB klein – sicher der komplette Standalone-Export?`);
+}
+
+// ---------------------------------------------------------------------------
+//  Injektionen. WICHTIG: Der Standalone-Export entpackt sich selbst per JS und
+//  baut dabei den <body> um – ein einfach eingefügtes <div> würde überschrieben.
+//  Deshalb: Styles in den <head> (überlebt immer) und ein Skript am Datei-ENDE,
+//  das die Leiste erst NACH dem Entpacken anhängt (beobachtet den <body>).
+// ---------------------------------------------------------------------------
+
+const kopfInjektion = `
+<meta name="robots" content="noindex, nofollow">
+<title>Design-Vorschau – ${kunde.replace(/[<>&"]/g, '')}</title>
+<style id="kanbuk-demo-stil">
+  /* Kanbuk-Vorschau-Leiste – UNTEN, damit sie klebenden Design-Headern nicht
+     in die Quere kommt. Feste Markenfarben, unabhängig vom Kundendesign. */
+  #kanbuk-demo-leiste {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 2147483000;
+    display: flex; align-items: center; justify-content: center; gap: .6rem;
+    background: linear-gradient(90deg, #6d28d9 0%, #5b21b6 100%);
+    color: #fff; font: 600 13px/1.4 system-ui, sans-serif; padding: 8px 14px;
+  }
+  #kanbuk-demo-leiste svg { width: 16px; height: 16px; flex: none; }
+  /* Handy-Hinweis: der Prototyp ist eine Desktop-Bühne. */
+  #kanbuk-handy-hinweis { display: none; }
+  @media (max-width: 760px) {
+    #kanbuk-handy-hinweis {
+      display: flex; flex-direction: column; gap: 14px; align-items: center;
+      justify-content: center; text-align: center;
+      position: fixed; inset: 0; z-index: 2147483001;
+      background: #18141f; color: #fff; padding: 32px;
+      font: 400 16px/1.6 system-ui, sans-serif;
+    }
+    #kanbuk-handy-hinweis strong { font-size: 19px; }
+    #kanbuk-handy-hinweis button {
+      font: 600 15px system-ui, sans-serif; color: #18141f; background: #fff;
+      border: 0; border-radius: 8px; padding: 10px 18px; cursor: pointer;
+    }
+  }
+</style>
+`;
+
+const fussInjektion = `
+<script id="kanbuk-demo-skript">
+(function () {
+  function einbauen() {
+    if (document.getElementById('kanbuk-demo-leiste')) return;
+    var leiste = document.createElement('div');
+    leiste.id = 'kanbuk-demo-leiste';
+    leiste.innerHTML = '<svg viewBox="0 0 36 36" aria-hidden="true"><g transform="translate(3,4) scale(1.32)" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 11 Q15 6.5 21.5 10"></path><path d="M19.4 9 L22 10.2 L21 12.8"></path><path d="M22 19 Q15 23.5 8.5 20"></path><path d="M10.6 21 L8 19.8 L9 17.2"></path></g></svg>'
+      + '<span><b>Kanbuk</b> · Design-Vorschau für ${kunde.replace(/[<>&"']/g, '')} – die fertige Website wird für alle Geräte gebaut</span>';
+    document.body.appendChild(leiste);
+
+    var hinweis = document.createElement('div');
+    hinweis.id = 'kanbuk-handy-hinweis';
+    hinweis.innerHTML = '<strong>Diese Design-Vorschau ist für große Bildschirme gestaltet.</strong>'
+      + '<span>Die fertige Website passt sich selbstverständlich jedem Handy an – '
+      + 'diese Vorschau zeigt nur den Design-Entwurf.</span>';
+    var knopf = document.createElement('button');
+    knopf.textContent = 'Entwurf trotzdem ansehen';
+    knopf.onclick = function () { hinweis.remove(); };
+    hinweis.appendChild(knopf);
+    document.body.appendChild(hinweis);
+  }
+  // Nach dem Entpacken einbauen – und dranbleiben, falls der Export den
+  // <body> später nochmals umbaut (Beobachter hängt die Leiste wieder an).
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', einbauen);
+  else einbauen();
+  new MutationObserver(einbauen).observe(document.documentElement, { childList: true, subtree: true });
+})();
+</script>
+`;
+
+// In den <head> (bzw. an den Anfang, falls keiner existiert) …
+if (/<head[^>]*>/i.test(html)) {
+  html = html.replace(/<head[^>]*>/i, (m) => m + kopfInjektion);
+} else {
+  html = kopfInjektion + html;
+}
+// … und ans Datei-Ende.
+html = /<\/html>\s*$/i.test(html) ? html.replace(/<\/html>\s*$/i, `${fussInjektion}\n</html>\n`) : html + fussInjektion;
+
+// ---------------------------------------------------------------------------
+//  Demo-Ordner schreiben
+// ---------------------------------------------------------------------------
+mkdirSync(ziel, { recursive: true });
+writeFileSync(join(ziel, 'index.html'), html, 'utf-8');
+writeFileSync(join(ziel, 'robots.txt'), 'User-agent: *\nDisallow: /\n', 'utf-8');
+writeFileSync(
+  join(ziel, 'vercel.json'),
+  JSON.stringify(
+    {
+      $schema: 'https://openapi.vercel.sh/vercel.json',
+      headers: [
+        {
+          source: '/(.*)',
+          headers: [
+            { key: 'X-Robots-Tag', value: 'noindex, nofollow' },
+            { key: 'X-Content-Type-Options', value: 'nosniff' },
+          ],
+        },
+      ],
+    },
+    null,
+    2,
+  ) + '\n',
+  'utf-8',
+);
+
+console.log(`✓ Demo gebaut: ${ziel}
+  Quelle: ${quelle} (${groesseMb} MB)
+  Drin: Kanbuk-Leiste (unten), Handy-Hinweis, noindex + robots + X-Robots-Tag
+`);
+
+if (deployen) {
+  console.log('→ Lade zu Vercel hoch (Projekt: kanbuk-demo-' + slug + ') …');
+  const r = spawnSync(`npx vercel --prod --name kanbuk-demo-${slug}`, {
+    cwd: ziel,
+    stdio: 'inherit',
+    shell: true,
+  });
+  process.exit(r.status ?? 0);
+} else {
+  console.log(`Hochladen (im Demo-Ordner, erster Lauf fragt nach dem Vercel-Team):
+    cd "${ziel}"
+    npx vercel --prod
+
+  Dem Lead NUR den kurzen Alias schicken (https://….vercel.app) und vorher
+  einmal selbst im privaten Fenster öffnen.`);
+}

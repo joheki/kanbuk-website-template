@@ -31,8 +31,11 @@ sind egal. Das wird beim Portieren umgebaut.
 > **Die Demo kann schon Schritt 1 sein:** Das Claude-Design-Projekt lässt sich
 > dem Kunden direkt als Verkaufs-Demo zeigen (Vollbild-Vorschau, vor Ort oder
 > per Bildschirmteilung) – 5–10 min Aufwand statt einer Stunde. Schritt 2 folgt
-> dann erst bei Kauf oder ernsthaftem Interesse. Wer lieber eine echte
-> Web-Vorschau verschickt, macht Schritt 2 sofort. Beides ist vorgesehen.
+> dann erst bei Kauf oder ernsthaftem Interesse. **Schickbarer Link ohne Port:**
+> `npm run demo -- --datei "<Standalone-Export>" --kunde "<Name>"` verpackt den
+> Claude-Design-Export (Kanbuk-Leiste, unsichtbar für Google, Handy-Hinweis)
+> und macht ihn per Vercel teilbar. Wer lieber gleich die echte Web-Vorschau
+> will, macht Schritt 2 sofort. Alles ist vorgesehen.
 
 ### 2 · Technisch umsetzen — *Claude Code, ~30–45 min*
 
@@ -144,6 +147,7 @@ Details: [CLAUDE.md, Abschnitt 7a](CLAUDE.md).
 | `npm run bogen -- --fotos` | Kontaktbögen: alle Fotos/Screenshots auf wenigen Übersichtsbildern |
 | `npm run holen -- --url <…> --ziel fotos/x.jpg` | Datei herunterladen UND auf Unversehrtheit prüfen |
 | `npm run preisliste` | `daten/preisliste.json` (aus Claude Design) validieren → typsichere `daten/preisliste.ts` |
+| `npm run demo -- --datei <export> --kunde "…"` | Claude-Design-Export als schickbare Demo hosten (ohne Port) |
 | `npm run sicht` | Sichtprüfung im echten Browser: Screenshots aller Seiten bei 350/768/1440 px + Überlauf-/Fehler-Messung |
 | `npm run platzhalter -- --name "…"` | Textlose Platzhalter + OG-Bild + Favicon (nach `fotos/`) |
 | `npm run stock -- --thema "…"` | Stock-Platzhalter (braucht `PEXELS_API_KEY` in `.env`) |

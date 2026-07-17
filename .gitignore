@@ -29,3 +29,4 @@ Thumbs.db
 # claude code – persönliche lokale Einstellungen (settings.json wird committet)
 .claude/settings.local.json
 pruefung/
+../kanbuk-demos/
