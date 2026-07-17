@@ -199,6 +199,9 @@ wird dabei ersetzt.
   keine Icon-Dateien erfinden, keine Icons aus dem Design-Export kopieren.
   Zeigt das Design Icon-Kreise o. Ä., den Baustein per `:global(.social-links…)`
   in diese Optik kleiden – nie Buchstaben („IG") als Icon-Ersatz stehen lassen.
+- **Die Fußzeile bekommt `<Signatur />`** (dezenter Kanbuk-Backlink, neben © und
+  Rechtslinks). Das ist Geschäftsmodell, keine Deko – das Prüf-Tor blockt bei
+  `--live` jede Seite ohne Signatur. Text anpassbar (`text="…"`), Marke bleibt.
 - **Rechtsseiten sind kein Sonderbereich:** Sobald Kopf- und Fußzeile des Kunden
   gebaut sind, beide in `src/layouts/RechtsLayout.astro` einbinden (Kopf + Fuss
   um den Textblock, Zurück-Link und Mini-Footer entfernen). Impressum und

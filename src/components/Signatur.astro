@@ -1,0 +1,45 @@
+---
+/**
+ * Signatur – MOTOR-Baustein: der Kanbuk-Backlink in der Fußzeile.
+ *
+ * Teil des Geschäftsmodells: Jede live geschaltete Kundenseite verlinkt
+ * dezent auf kanbuk.com – ein dauerhafter Backlink von der Kundendomain.
+ * Das Prüf-Tor erzwingt ihn bei der Live-Prüfung (npm run check -- --live);
+ * ohne Signatur geht keine Seite live.
+ *
+ * Verwendung (in der Fußzeile des Kunden-Designs, neben © und Rechtslinks):
+ *   <Signatur />                             → „Website von Kanbuk"
+ *   <Signatur text="Webdesign: Kanbuk" />    → eigener Text (Marke bleibt)
+ *
+ * Absichtlich MARKEN-Anker („Kanbuk"), kein Keyword-Anker („Webdesign Wien"):
+ * seitenweite Footer-Links mit Keyword-Text wertet Google als Link-Spam.
+ * Der Markenname ist natürlich, unauffällig – und zählt trotzdem.
+ */
+interface Props {
+  text?: string;
+  class?: string;
+}
+const { text = 'Website von Kanbuk', class: klasse } = Astro.props;
+---
+
+<a class:list={['signatur', klasse]} href="https://kanbuk.com" target="_blank" rel="noopener">
+  {text}
+</a>
+
+<style>
+  /* Bewusst dezent: erbt Schrift und Farbe der Fußzeile, leicht zurückgenommen.
+     Das Design darf nachschärfen – aber nie verstecken (ein unsichtbarer Link
+     ist auch für Google wertlos bis schädlich). */
+  .signatur {
+    color: inherit;
+    opacity: 0.7;
+    text-decoration: none;
+    font-size: var(--schrift-s);
+    white-space: nowrap;
+  }
+  .signatur:hover,
+  .signatur:focus-visible {
+    opacity: 1;
+    text-decoration: underline;
+  }
+</style>

@@ -222,6 +222,7 @@ bauen – anschließen und im Design anmalen.
 | **Vergleich** | `data-vergleich` | Vorher/Nachher |
 | **Formular** | `<Formular id="…" />` | Kontakt, Reservierung, Termin |
 | **Social-Icons** | `<SocialLinks />` (liest `betrieb.socialLinks`) | Fußzeile, Kontaktseite |
+| **Signatur** | `<Signatur />` | Fußzeile – Kanbuk-Backlink (**Live-Pflicht**, Prüf-Tor erzwingt sie) |
 | **Einwilligung** | automatisch, wenn `dienste` gefüllt | Pixel/Tracking (Abschnitt 7a) |
 | **Einbettung** | `<Einbettung url=… />` | Maps/YouTube per 2-Klick (Abschnitt 7a) |
 

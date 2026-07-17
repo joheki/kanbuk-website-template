@@ -75,6 +75,7 @@ bekommt ein neuer Mitarbeiter vom Inhaber).
      Sperr-Header – dort ist NICHTS von Hand zu ändern.
    - Rechtstexte vollständig und echt (UID/Firmenbuch etc.), echte Bilder eingesetzt,
      alle offenen Punkte in STAND.md abgehakt.
+   - Fußzeile enthält `<Signatur />` (Kanbuk-Backlink – Schritt 2 blockt sonst rot).
 2. **Neu bauen:** `npm run check -- --live` muss grün sein (blockt bei offenen
    STAND.md-Punkten und Platzhaltern).
 3. **Formular-Versand:** im Vercel-Dashboard (bzw. `vercel env add`) `RESEND_API_KEY` und

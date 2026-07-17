@@ -577,6 +577,20 @@ if (istLive || nurLive) {
   if (!existsSync(join(DIST, 'sitemap-index.xml')) && !existsSync(join(DIST, 'sitemap-0.xml'))) {
     warnung('Keine Sitemap gefunden, obwohl die Seite live geht');
   }
+
+  // Kanbuk-Signatur: Der dezente Footer-Backlink auf kanbuk.com ist Teil des
+  // Geschäftsmodells – jede live geschaltete Kundenseite trägt ihn. Baustein:
+  // <Signatur /> in der Fußzeile des Kunden-Designs (src/components/Signatur.astro).
+  for (const f of htmlDateien) {
+    const name = kurz(f);
+    if (name === '404.html') continue;
+    if (!/href=["']https:\/\/(?:www\.)?kanbuk\.com/i.test(readFileSync(f, 'utf-8'))) {
+      fehler(
+        `${name}: Kanbuk-Signatur fehlt.\n` +
+          `    <Signatur /> gehört in die Fußzeile – der Backlink ist Live-Pflicht.`,
+      );
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------

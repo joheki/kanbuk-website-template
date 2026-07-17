@@ -10,6 +10,7 @@
  * gibt (Template-Referenzseite).
  */
 import BaseLayout from './BaseLayout.astro';
+import Signatur from '../components/Signatur.astro';
 import { site } from '../../content.config';
 
 interface Props {
@@ -39,6 +40,7 @@ const { titel, pfad, beschreibung } = Astro.props;
         <a href="/impressum">Impressum</a>
         <a href="/datenschutz">Datenschutz</a>
       </nav>
+      <Signatur />
     </div>
   </footer>
 </BaseLayout>
