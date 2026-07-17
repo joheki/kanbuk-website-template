@@ -6,7 +6,7 @@
  * (Früher standen hier auch Farben, Schriften, Sektions-Reihenfolgen und
  * Paletten – all das entscheidet jetzt das Design.)
  */
-import type { Branche } from '../../content.config';
+import type { Branche } from '../../content.config.js';
 
 /** Schema.org-Typ je Branche für die JSON-LD-Auszeichnung (LocalBusiness-Subtyp). */
 export const BRANCHE_JSONLD_TYP: Record<Branche, string> = {

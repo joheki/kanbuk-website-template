@@ -18,7 +18,7 @@
  * =============================================================================
  */
 
-import { BRANCHE_JSONLD_TYP } from './src/lib/branchen';
+import { BRANCHE_JSONLD_TYP } from './src/lib/branchen.js';
 
 // ---------------------------------------------------------------------------
 //  Auswahl-Werte

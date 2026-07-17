@@ -6,7 +6,7 @@
  * Austauschbar mit der Vercel-Variante (api/contact.ts) – beide nutzen dieselbe
  * Logik aus src/lib/kontakt.ts. Es ist immer nur eine Plattform aktiv.
  */
-import { verarbeiteKontakt, type Eingabe, type KontaktEnv } from '../../src/lib/kontakt';
+import { verarbeiteKontakt, type Eingabe, type KontaktEnv } from '../../src/lib/kontakt.js';
 
 interface PagesContext {
   request: Request;

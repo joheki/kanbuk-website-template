@@ -8,7 +8,8 @@
  *
  * Versendet über die Resend-REST-API (kein zusätzliches npm-Paket nötig).
  */
-import { site } from '../../content.config';
+// .js-Endung Pflicht (Node-ESM im Serverless-Bundle, s. api/contact.ts).
+import { site } from '../../content.config.js';
 
 export interface KontaktEnv {
   RESEND_API_KEY?: string;

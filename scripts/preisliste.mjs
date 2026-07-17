@@ -392,7 +392,8 @@ if (!stimmt) {
 
 // Import-Pfad relativ zum Ziel berechnen – so stimmt er auch, wenn das Ziel
 // (etwa im Selbsttest) nicht in daten/ liegt.
-let importPfad = relative(dirname(ziel), join(root, 'content.config')).replace(/\\/g, '/');
+// .js-Endung Pflicht: die Datei wandert mit ins Serverless-Bundle (Node-ESM).
+let importPfad = relative(dirname(ziel), join(root, 'content.config.js')).replace(/\\/g, '/');
 if (!importPfad.startsWith('.')) importPfad = `./${importPfad}`;
 
 const inhalt = `/**

@@ -3,7 +3,9 @@
  * Aktiv, wenn das Projekt auf Vercel deployt wird.
  * Umgebungsvariablen (im Vercel-Dashboard setzen): RESEND_API_KEY, CONTACT_FROM
  */
-import { verarbeiteKontakt, type Eingabe } from '../src/lib/kontakt';
+// Die .js-Endung ist Pflicht: Vercel baut Server-Dateien als Node-ESM –
+// ohne Endung stürzt die Funktion beim Start ab (FUNCTION_INVOCATION_FAILED).
+import { verarbeiteKontakt, type Eingabe } from '../src/lib/kontakt.js';
 
 export const config = { runtime: 'nodejs' };
 
