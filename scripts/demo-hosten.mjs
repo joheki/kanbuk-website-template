@@ -84,14 +84,32 @@ const kopfInjektion = `
 <title>Design-Vorschau – ${kunde.replace(/[<>&"]/g, '')}</title>
 <style id="kanbuk-demo-stil">
   /* Kanbuk-Vorschau-Leiste – UNTEN, damit sie klebenden Design-Headern nicht
-     in die Quere kommt. Feste Markenfarben, unabhängig vom Kundendesign. */
+     in die Quere kommt. Weißer „Cloud"-Look mit schwarzem Zeichen, violettem
+     Vorschau-Text und pulsierendem grünem Live-Punkt – feste Markenwerte,
+     unabhängig vom Kundendesign. */
   #kanbuk-demo-leiste {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 2147483000;
     display: flex; align-items: center; justify-content: center; gap: .6rem;
-    background: linear-gradient(90deg, #6d28d9 0%, #5b21b6 100%);
-    color: #fff; font: 600 13px/1.4 system-ui, sans-serif; padding: 8px 14px;
+    background: #ffffff; color: #18141f;
+    border-top: 1px solid rgba(24,20,31,.08);
+    box-shadow: 0 -1px 10px rgba(24,20,31,.08);
+    font: 600 13px/1.4 system-ui, sans-serif; padding: 8px 14px;
   }
   #kanbuk-demo-leiste svg { width: 16px; height: 16px; flex: none; }
+  #kanbuk-demo-leiste .kanbuk-wort { font-weight: 800; color: #18141f; }
+  #kanbuk-demo-leiste .kanbuk-text { color: #6d28d9; }
+  #kanbuk-demo-leiste .kanbuk-puls {
+    width: 8px; height: 8px; border-radius: 50%; background: #22c55e; flex: none;
+    animation: kanbuk-puls 1.8s ease-out infinite;
+  }
+  @keyframes kanbuk-puls {
+    0% { box-shadow: 0 0 0 0 rgba(34,197,94,.45); }
+    70% { box-shadow: 0 0 0 7px rgba(34,197,94,0); }
+    100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #kanbuk-demo-leiste .kanbuk-puls { animation: none; }
+  }
   /* Handy-Hinweis: der Prototyp ist eine Desktop-Bühne. */
   #kanbuk-handy-hinweis { display: none; }
   @media (max-width: 760px) {
@@ -118,8 +136,10 @@ const fussInjektion = `
     if (document.getElementById('kanbuk-demo-leiste')) return;
     var leiste = document.createElement('div');
     leiste.id = 'kanbuk-demo-leiste';
-    leiste.innerHTML = '<svg viewBox="0 0 36 36" aria-hidden="true"><g transform="translate(3,4) scale(1.32)" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 11 Q15 6.5 21.5 10"></path><path d="M19.4 9 L22 10.2 L21 12.8"></path><path d="M22 19 Q15 23.5 8.5 20"></path><path d="M10.6 21 L8 19.8 L9 17.2"></path></g></svg>'
-      + '<span><b>Kanbuk</b> · Design-Vorschau für ${kunde.replace(/[<>&"']/g, '')} – die fertige Website wird für alle Geräte gebaut</span>';
+    leiste.innerHTML = '<svg viewBox="0 0 36 36" aria-hidden="true"><g transform="translate(3,4) scale(1.32)" fill="none" stroke="#18141f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 11 Q15 6.5 21.5 10"></path><path d="M19.4 9 L22 10.2 L21 12.8"></path><path d="M22 19 Q15 23.5 8.5 20"></path><path d="M10.6 21 L8 19.8 L9 17.2"></path></g></svg>'
+      + '<span class="kanbuk-wort">Kanbuk</span>'
+      + '<span class="kanbuk-puls" aria-hidden="true"></span>'
+      + '<span class="kanbuk-text">Vorschau für ${kunde.replace(/[<>&"']/g, '')} – die fertige Website wird für alle Geräte gebaut</span>';
     document.body.appendChild(leiste);
 
     var hinweis = document.createElement('div');
