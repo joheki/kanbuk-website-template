@@ -34,7 +34,9 @@ sind egal. Das wird beim Portieren umgebaut.
 > dann erst bei Kauf oder ernsthaftem Interesse. **Schickbarer Link ohne Port:**
 > `npm run demo -- --datei "<Standalone-Export>" --kunde "<Name>"` verpackt den
 > Claude-Design-Export (Kanbuk-Leiste, unsichtbar für Google, Handy-Hinweis)
-> und macht ihn per Vercel teilbar. Wer lieber gleich die echte Web-Vorschau
+> und macht ihn per Vercel teilbar. Funktioniert im Template-Ordner UND in jedem
+> frischen Kundenordner (sogar ohne `npm install`) – die Demo landet immer
+> außerhalb in `kanbuk-demos/`, das Projekt bleibt sauber. Wer lieber gleich die echte Web-Vorschau
 > will, macht Schritt 2 sofort. Alles ist vorgesehen.
 
 ### 2 · Technisch umsetzen — *Claude Code, ~30–45 min*
