@@ -119,6 +119,11 @@ const kopfInjektion = `
   @media (prefers-reduced-motion: reduce) {
     #kanbuk-demo-leiste .kanbuk-puls { animation: none; }
   }
+  /* Bildfelder des Design-Editors stilllegen: Doppelklick auf leere
+     Platzhalter öffnete sonst einen Datei-Auswahldialog (harmlos – nichts
+     wird gespeichert –, aber verwirrend). pointer-events lässt Klicks an
+     umschließende Links durchfallen, es geht also nichts kaputt. */
+  image-slot { pointer-events: none !important; }
   /* Handy-Hinweis: der Prototyp ist eine Desktop-Bühne. */
   #kanbuk-handy-hinweis { display: none; }
   @media (max-width: 760px) {
