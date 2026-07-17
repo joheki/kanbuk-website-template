@@ -28,7 +28,13 @@ Gestalten, bis es passt. **Projekt-Link kopieren.**
 Um Technik kümmerst du dich dort nicht – feste Pixel, Desktop-Layout, CDN-Schriften
 sind egal. Das wird beim Portieren umgebaut.
 
-### 2 · Vorschau bauen — *Claude Code, ~30 min*
+> **Die Demo kann schon Schritt 1 sein:** Das Claude-Design-Projekt lässt sich
+> dem Kunden direkt als Verkaufs-Demo zeigen (Vollbild-Vorschau, vor Ort oder
+> per Bildschirmteilung) – 5–10 min Aufwand statt einer Stunde. Schritt 2 folgt
+> dann erst bei Kauf oder ernsthaftem Interesse. Wer lieber eine echte
+> Web-Vorschau verschickt, macht Schritt 2 sofort. Beides ist vorgesehen.
+
+### 2 · Technisch umsetzen — *Claude Code, ~30–45 min*
 
 ```bash
 # Das Template liegt im GitHub-Konto joheki – zieht es je um, nur diese Zeile anpassen.

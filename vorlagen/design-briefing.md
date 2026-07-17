@@ -27,8 +27,10 @@ CDN-Schriften, ein Maps-Rahmen – alles egal, das wird beim Portieren umgebaut.
 ## Der Briefing-Text (kopieren)
 
 ```text
-Du gestaltest die Website eines Wiener Kleinbetriebs. Bitte halte dich an
-folgende Regeln – sie betreffen INHALT und STRUKTUR, nicht die Technik.
+Du gestaltest die Website eines Wiener Kleinbetriebs. WICHTIG: Dieses Design
+wird dem Betrieb direkt als Verkaufs-Demo GEZEIGT – es muss präsentationsfertig
+sein, nicht nur eine Skizze. Halte dich an folgende Regeln – sie betreffen
+INHALT und STRUKTUR, nicht die Technik.
 
 SPRACHE
 - Österreichisches Standarddeutsch. Also "Jänner" statt "Januar", "heuer",
@@ -193,6 +195,18 @@ Umsetzungs-Motor:
 ```
 
 ---
+
+## Für dich: So zeigst du die Demo dem Kunden
+
+Das Design IST die Verkaufs-Demo – gezeigt wird direkt aus Claude Design
+(Vollbild-Vorschau), auf deinem Gerät oder per Bildschirmteilung. Der Link
+selbst ist NICHT teilbar (braucht deinen Login).
+
+- **Die Handy-Frage** („und am Telefon?") kommt immer. Konter: eine fertige
+  Referenz-Seite am Handy zeigen – „so sieht das Endprodukt bei Ihnen aus;
+  die Demo hier zeigt IHR Design, die Technik kommt bei Auftrag."
+- Erst bei Kauf oder sehr starkem Interesse beginnt die technische Umsetzung
+  (Kundenordner + /port). Vorher keine Minute Technik investieren.
 
 ## Für dich: Was du in Claude Design NICHT reparieren musst
 
