@@ -24,8 +24,11 @@
  * =============================================================================
  */
 import { readFileSync, writeFileSync, mkdirSync, existsSync, statSync } from 'node:fs';
-import { join, resolve, isAbsolute } from 'node:path';
+import { join, resolve, isAbsolute, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
+
+const SKRIPT_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 const args = process.argv.slice(2);
 const wert = (name, standard) => {
@@ -79,6 +82,14 @@ if (statSync(quelle).size < 100 * 1024) {
 //  das die Leiste erst NACH dem Entpacken anhängt (beobachtet den <body>).
 // ---------------------------------------------------------------------------
 
+/* Das echte Kanbuk-Logo als Daten-URI einbetten – die Demo bleibt eine einzige,
+   selbständige Datei ohne Nebenressourcen. (Base64 hier ist unbedenklich: das
+   Skript kodiert direkt von der Platte, nichts läuft durch einen Chat.) */
+const logoPfad = join(SKRIPT_ROOT, 'src', 'assets', 'kanbuk-logo.png');
+const logoDataUri = existsSync(logoPfad)
+  ? `data:image/png;base64,${readFileSync(logoPfad).toString('base64')}`
+  : '';
+
 const kopfInjektion = `
 <meta name="robots" content="noindex, nofollow">
 <title>Design-Vorschau – ${kunde.replace(/[<>&"]/g, '')}</title>
@@ -95,8 +106,7 @@ const kopfInjektion = `
     box-shadow: 0 -1px 10px rgba(24,20,31,.08);
     font: 600 13px/1.4 system-ui, sans-serif; padding: 8px 14px;
   }
-  #kanbuk-demo-leiste svg { width: 16px; height: 16px; flex: none; }
-  #kanbuk-demo-leiste .kanbuk-wort { font-weight: 800; color: #18141f; }
+  #kanbuk-demo-leiste .kanbuk-logo { height: 16px; width: auto; display: block; flex: none; }
   #kanbuk-demo-leiste .kanbuk-text { color: #6d28d9; }
   #kanbuk-demo-leiste .kanbuk-puls {
     width: 8px; height: 8px; border-radius: 50%; background: #22c55e; flex: none;
@@ -136,8 +146,7 @@ const fussInjektion = `
     if (document.getElementById('kanbuk-demo-leiste')) return;
     var leiste = document.createElement('div');
     leiste.id = 'kanbuk-demo-leiste';
-    leiste.innerHTML = '<svg viewBox="0 0 36 36" aria-hidden="true"><g transform="translate(3,4) scale(1.32)" fill="none" stroke="#18141f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 11 Q15 6.5 21.5 10"></path><path d="M19.4 9 L22 10.2 L21 12.8"></path><path d="M22 19 Q15 23.5 8.5 20"></path><path d="M10.6 21 L8 19.8 L9 17.2"></path></g></svg>'
-      + '<span class="kanbuk-wort">Kanbuk</span>'
+    leiste.innerHTML = '<img class="kanbuk-logo" src="${logoDataUri}" alt="Kanbuk">'
       + '<span class="kanbuk-puls" aria-hidden="true"></span>'
       + '<span class="kanbuk-text">Vorschau für ${kunde.replace(/[<>&"']/g, '')} – die fertige Website wird für alle Geräte gebaut</span>';
     document.body.appendChild(leiste);
