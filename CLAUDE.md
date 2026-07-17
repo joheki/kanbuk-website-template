@@ -265,6 +265,13 @@ die fertige Seite – mit gezogenem Stecker.
 - `robots.txt` sperrt alles, keine Sitemap
 - **Braucht keinen Resend-Schlüssel, keine echte Domain, keine echten Rechtstexte**
 
+**Adress-Stufen (Kanbuk-Konvention):** Verkaufs-Demo auf
+`demo-<kunde>.kanbuk.com` (setzt `npm run demo` automatisch) → Abnahme-Vorschau
+des gebauten Klons auf `<kunde>.kanbuk.com`
+(`npx vercel alias set <projekt>.vercel.app <kunde>.kanbuk.com`) → live auf der
+**eigenen Domain des Kunden**. Die kanbuk.com-Unterdomains sind Vorschau-Stufen,
+nie die endgültige Adresse.
+
 **`live` (die Seite soll öffentlich sein – im Standardablauf: der Kunde hat gebucht):**
 kein Balken, Formular scharf (Resend), `tel:` klickbar,
 Indexierung an, Sitemap. Zusätzlich nötig – und das sind **die einzigen drei Dinge**:
