@@ -144,6 +144,16 @@ for (const f of htmlDateien) {
     fehler(`${name}: setzt ein Cookie – die Seite muss cookiefrei bleiben (sonst Banner-Pflicht)`);
   }
 
+  // Die EU-Streitbeilegungsplattform wurde am 20.07.2025 eingestellt
+  // (VO (EU) 2024/3228). Ein Link darauf ist ein toter Pflicht-Link und
+  // laut WKO zu entfernen – er darf nie wieder in ein Impressum rutschen.
+  if (/ec\.europa\.eu\/consumers\/odr/i.test(html)) {
+    fehler(
+      `${name}: Link auf die eingestellte EU-Streitbeilegungsplattform (ec.europa.eu/consumers/odr).\n` +
+        `    Die Plattform wurde am 20.07.2025 abgeschaltet – den Verweis ersatzlos entfernen.`,
+    );
+  }
+
   // Tracking-Code: nur erlaubt, wenn er als type="text/plain" geparkt ist
   // (dann führt der Browser ihn NICHT aus – erst nach der Einwilligung).
   const trackingMuster = /google-analytics|googletagmanager|gtag\(|fbq\(|_paq\.push|hotjar|clarity\.ms/i;
