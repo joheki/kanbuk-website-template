@@ -183,6 +183,91 @@ console.log(`✓ Demo gebaut: ${ziel}
   Drin: Kanbuk-Leiste (unten), Handy-Hinweis, noindex + robots + X-Robots-Tag
 `);
 
+// ---------------------------------------------------------------------------
+//  Sicht-Check der VERPACKTEN Demo – bevor der Link zu einem Lead geht.
+//  Misst, was messbar ist (Überlauf über die 1280er-Bühne, JS-Fehler, kaputte
+//  Bilder/Ressourcen) und macht einen Ganzseiten-Screenshot für das, was nur
+//  Augen beurteilen können (Kontrast, dunkle Schrift auf dunklem Grund,
+//  Layout-Brüche). Der Screenshot MUSS danach angesehen werden.
+//
+//  Läuft nur, wenn playwright installiert ist (Template-Ordner bzw. Klon nach
+//  `npm install`) – ohne wird die Prüfung übersprungen, das Verpacken selbst
+//  braucht weiterhin kein npm install.
+// ---------------------------------------------------------------------------
+try {
+  const { chromium } = await import('playwright');
+  const { starteDistServer } = await import('./lib/dist-server.mjs');
+  const { basis, stop } = await starteDistServer(ziel);
+
+  const browser = await chromium.launch();
+  const page = await (await browser.newContext({ viewport: { width: 1280, height: 900 } })).newPage();
+
+  const jsFehler = [];
+  const kaputt = [];
+  page.on('pageerror', (e) => jsFehler.push(e.message.split('\n')[0]));
+  page.on('console', (m) => m.type() === 'error' && jsFehler.push(m.text().split('\n')[0]));
+  page.on('requestfailed', (r) => kaputt.push(`${r.url()} (${r.failure()?.errorText})`));
+  page.on('response', (r) => r.status() >= 400 && kaputt.push(`${r.url()} (HTTP ${r.status()})`));
+
+  await page.goto(basis + '/', { waitUntil: 'load' });
+  await page.waitForTimeout(1500); // Selbst-Entpacken + Bilder abwarten
+
+  // Leere Bild-Kacheln (Export unvollständig?) und Überlauf über die Bühne
+  const messung = await page.evaluate(() => {
+    const doc = document.documentElement;
+    const kaputteBilder = [...document.images]
+      .filter((i) => i.complete && i.naturalWidth === 0 && !i.src.startsWith('data:'))
+      .slice(0, 5)
+      .map((i) => i.src);
+    let ueberlauf = null;
+    if (doc.scrollWidth > doc.clientWidth + 1) {
+      const schuldige = [];
+      for (const el of document.querySelectorAll('body *')) {
+        const r = el.getBoundingClientRect();
+        if (r.right > doc.clientWidth + 1 || r.left < -1) {
+          schuldige.push(`<${el.tagName.toLowerCase()}${el.className ? '.' + String(el.className).split(' ')[0] : ''}> bis ${Math.round(r.right)}px`);
+          if (schuldige.length >= 3) break;
+        }
+      }
+      ueberlauf = { breite: doc.scrollWidth, schuldige };
+    }
+    return { kaputteBilder, ueberlauf };
+  });
+
+  const shot = join(ziel, 'pruefung-demo.png');
+  await page.screenshot({ path: shot, fullPage: true });
+  await browser.close();
+  stop();
+
+  const warnungen = [];
+  if (messung.ueberlauf) {
+    warnungen.push(
+      `ÜBERLAUF über die 1280er-Bühne (${messung.ueberlauf.breite}px breit):\n      ${messung.ueberlauf.schuldige.join('\n      ')}`,
+    );
+  }
+  for (const f of [...new Set(jsFehler)].slice(0, 5)) warnungen.push(`JS-Fehler -> ${f.slice(0, 120)}`);
+  for (const k of [...new Set(kaputt)].slice(0, 5)) warnungen.push(`lädt nicht -> ${k.slice(0, 120)}`);
+  for (const b of messung.kaputteBilder) warnungen.push(`leeres Bild (Export unvollständig?) -> ${b.slice(0, 120)}`);
+
+  if (warnungen.length > 0) {
+    console.log('⚠ SICHT-CHECK: Das Design bringt Probleme mit – VOR dem Verschicken klären');
+    console.log('  (am besten in Claude Design beheben lassen und neu exportieren):');
+    for (const w of warnungen) console.log(`  • ${w}`);
+    console.log('');
+  } else {
+    console.log('✓ Sicht-Check: kein Überlauf, keine JS-Fehler, alle Bilder laden.');
+  }
+  console.log(`  PFLICHT vor dem Verschicken: ${shot.split(/[\\/]/).pop()} im Demo-Ordner ANSEHEN –
+  Kontrast (dunkle Schrift auf dunklem Grund!), Layout, Vollständigkeit
+  beurteilen nur Augen, kein Skript.
+`);
+} catch (e) {
+  console.log(`↷ Sicht-Check übersprungen (${e.message.split('\n')[0].slice(0, 60)}…)
+  Für die automatische Prüfung: einmal "npm install" im Projektordner ausführen.
+  Bis dahin: den Link vor dem Verschicken selbst im privaten Fenster + am Handy prüfen.
+`);
+}
+
 if (deployen) {
   console.log('→ Lade zu Vercel hoch (Projekt: kanbuk-demo-' + slug + ') …');
   const r = spawnSync(`npx vercel --prod --name kanbuk-demo-${slug}`, {
