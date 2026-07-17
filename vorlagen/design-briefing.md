@@ -200,10 +200,12 @@ Umsetzungs-Motor:
 
 Das Design IST die Verkaufs-Demo – gezeigt wird direkt aus Claude Design
 (Vollbild-Vorschau), auf deinem Gerät oder per Bildschirmteilung. Der Link
-selbst ist NICHT teilbar (braucht deinen Login). Brauchst du doch einen
-schickbaren Link: Standalone-Export herunterladen und im Template-Ordner
-`npm run demo -- --datei "<Export>" --kunde "<Name>"` ausführen – fertig
-verpackt (Kanbuk-Leiste, unsichtbar für Google, Handy-Hinweis) für Vercel.
+selbst ist NICHT teilbar (braucht deinen Login). Brauchst du einen
+schickbaren Link: in Claude Design „Export → Project archive" (gratis,
+sofort, alle Seiten) und `npm run demo -- --datei "<Archiv.zip>" --kunde
+"<Name>"` – fertig verpackt (Kanbuk-Leiste, unsichtbar für Google,
+Handy-Hinweis) für Vercel. Kein Standalone-Export nötig (der kostet
+Claude-Kontingent).
 
 - **Die Handy-Frage** („und am Telefon?") kommt immer. Konter: eine fertige
   Referenz-Seite am Handy zeigen – „so sieht das Endprodukt bei Ihnen aus;

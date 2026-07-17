@@ -423,7 +423,7 @@ keines optimiert wurde.
 | `npm run bogen -- --fotos` | Kontaktbögen aller Fotos (Sichtpflicht mit 1–2 Reads statt 20) |
 | `npm run holen -- --url <…> --ziel <pfad>` | Download + Integritätsprüfung (nie Base64 durch den Chat!) |
 | `npm run preisliste` | Preislisten-JSON aus dem Design validieren → `daten/preisliste.ts` |
-| `npm run demo -- --datei <export> --kunde "…"` | Design-Export als schickbare Verkaufs-Demo hosten (noindex, Kanbuk-Leiste, Handy-Hinweis) |
+| `npm run demo -- --datei <archiv.zip> --kunde "…"` | Design-Projekt-Archiv (oder Standalone) als schickbare Verkaufs-Demo hosten (noindex, Kanbuk-Leiste, Handy-Hinweis, Sicht-Check) |
 | `npm run sicht` | **Sichtprüfung im echten Browser** – Screenshots + Überlauf-/Fehler-Messung |
 | `npm run platzhalter -- …` | Textlose Platzhalterbilder + OG + Favicon |
 | `npm run stock -- --thema "…"` | Stock-Platzhalter (braucht `PEXELS_API_KEY`) |

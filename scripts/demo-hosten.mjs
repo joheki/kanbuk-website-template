@@ -1,30 +1,33 @@
 /**
  * =============================================================================
- *  DEMO-HOSTEN – den Claude-Design-Export als schickbaren Link veröffentlichen
+ *  DEMO-HOSTEN – das Claude-Design-Projekt als schickbaren Link veröffentlichen
  * =============================================================================
  *  Für den Verkaufs-Trichter VOR dem Port: Der Claude-Design-Link selbst ist
- *  nicht teilbar (braucht Login). Claude Design erzeugt aber im Projekt eine
- *  Standalone-Datei („<Name> (Standalone).html") – eine einzige Datei mit dem
- *  kompletten Design. Dieses Skript macht daraus eine hostbare Demo:
+ *  nicht teilbar (braucht Login). Dieses Skript macht aus dem Design eine
+ *  hostbare Demo – mit Kanbuk-Leiste, Google-Sperre und Handy-Hinweis.
  *
- *   1. Kanbuk-Vorschau-Leiste (unten, damit sie keinem klebenden Design-Header
- *      in die Quere kommt)
- *   2. noindex + robots.txt + X-Robots-Tag – die Demo darf NIE in Google landen
- *   3. Handy-Hinweis: der Prototyp ist eine 1280-px-Bühne; statt kaputtem
- *      Layout sieht ein Handy-Besucher eine freundliche Erklärung (wegklickbar)
+ *  ZWEI QUELLEN (Standardweg zuerst):
  *
- *  Verwendung (aus dem Template-Ordner):
- *   1. In Claude Design: die Standalone-Datei des Projekts herunterladen
- *   2. npm run demo -- --datei "C:/Users/…/Downloads/X (Standalone).html" --kunde "Cafe Sonne"
- *   3. Das Skript baut ../kanbuk-demos/<kunde>/ und zeigt den Deploy-Befehl
- *      (mit --deploy führt es ihn direkt aus: npx vercel --prod)
+ *  A) PROJEKT-ARCHIV (Zip) – in Claude Design: Export → „Project archive".
+ *     Gratis, sofort, enthält ALLES (alle Seiten, Bilder, PDFs). Die Demo wird
+ *     als echte Mehrseiten-Site gehostet – jede Unterseite mit eigener URL.
+ *       npm run demo -- --datei "C:/…/Projekt.zip" --kunde "Cafe Sonne"
  *
- *  Das ist eine DESIGN-Demo (Desktop-Bühne, Prototyp-Klicks) – kein Produkt.
+ *  B) STANDALONE-HTML – die eine selbständige Datei („… (Standalone).html").
+ *     Verbraucht beim Export Claude-Kontingent; enthält nur die EINE Datei.
+ *       npm run demo -- --datei "C:/…/X (Standalone).html" --kunde "Cafe Sonne"
+ *
+ *  Danach zeigt das Skript den Vercel-Befehl (mit --deploy führt es ihn aus).
+ *  Es ist eine DESIGN-Demo (1280-px-Bühne, Prototyp-Klicks) – kein Produkt.
  *  Die echte, responsive Website entsteht erst beim Port.
  * =============================================================================
  */
-import { readFileSync, writeFileSync, mkdirSync, existsSync, statSync } from 'node:fs';
-import { join, resolve, isAbsolute, dirname } from 'node:path';
+import {
+  readFileSync, writeFileSync, mkdirSync, existsSync, statSync, readdirSync,
+  cpSync, rmSync, mkdtempSync,
+} from 'node:fs';
+import { join, resolve, isAbsolute, dirname, extname, basename } from 'node:path';
+import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
@@ -44,12 +47,11 @@ if (!datei || !kunde) {
   console.error(`
 So wird eine Design-Demo hostbar:
 
-  npm run demo -- --datei "<Pfad zur (Standalone).html>" --kunde "<Betriebsname>"
+  npm run demo -- --datei "<Projekt-Archiv.zip ODER (Standalone).html>" --kunde "<Betriebsname>"
   npm run demo -- --datei "…" --kunde "…" --deploy     (lädt direkt zu Vercel hoch)
 
-Die Standalone-Datei erzeugt Claude Design im Projekt ("<Name> (Standalone).html") –
-im Projekt öffnen und herunterladen. Optional: --ziel <ordner> (Standard:
-../kanbuk-demos/<kunde>).`);
+Empfohlen: in Claude Design „Export → Project archive" (gratis, sofort, alle
+Seiten) und das Zip übergeben. Optional: --ziel <ordner>.`);
   process.exit(1);
 }
 
@@ -64,40 +66,30 @@ const slug = kunde
   .replace(/[äöüß]/g, (c) => ({ ä: 'ae', ö: 'oe', ü: 'ue', ß: 'ss' }[c] ?? c))
   .replace(/[^a-z0-9]+/g, '-')
   .replace(/^-|-$/g, '');
-const ziel = resolve(process.cwd(), wert('ziel', join('..', 'kanbuk-demos', slug)));
+/* Der Ordnername wird bei Vercel zum Projektnamen – deshalb kanbuk-demo-…,
+   damit die Demo nie mit dem späteren echten Kundenprojekt kollidiert. */
+const ziel = resolve(process.cwd(), wert('ziel', join('..', 'kanbuk-demos', `kanbuk-demo-${slug}`)));
 
-let html = readFileSync(quelle, 'utf-8');
-const groesseMb = (statSync(quelle).size / 1024 / 1024).toFixed(1);
-
-// Plausibilitäts-Warnung: eine echte Standalone-Datei trägt das Design IN sich
-// und ist entsprechend groß. Eine winzige Datei ist meist ein Fehlexport.
-if (statSync(quelle).size < 100 * 1024) {
-  console.warn(`⚠ Die Datei ist nur ${groesseMb} MB klein – sicher der komplette Standalone-Export?`);
-}
-
-// ---------------------------------------------------------------------------
-//  Injektionen. WICHTIG: Der Standalone-Export entpackt sich selbst per JS und
-//  baut dabei den <body> um – ein einfach eingefügtes <div> würde überschrieben.
-//  Deshalb: Styles in den <head> (überlebt immer) und ein Skript am Datei-ENDE,
-//  das die Leiste erst NACH dem Entpacken anhängt (beobachtet den <body>).
-// ---------------------------------------------------------------------------
-
-/* Das echte Kanbuk-Logo als Daten-URI einbetten – die Demo bleibt eine einzige,
-   selbständige Datei ohne Nebenressourcen. (Base64 hier ist unbedenklich: das
-   Skript kodiert direkt von der Platte, nichts läuft durch einen Chat.) */
+/* Das echte Kanbuk-Logo als Daten-URI einbetten – die Demo braucht keine
+   Nebenressourcen. (Base64 hier ist unbedenklich: das Skript kodiert direkt
+   von der Platte, nichts läuft durch einen Chat.) */
 const logoPfad = join(SKRIPT_ROOT, 'src', 'assets', 'kanbuk-logo.png');
 const logoDataUri = existsSync(logoPfad)
   ? `data:image/png;base64,${readFileSync(logoPfad).toString('base64')}`
   : '';
 
+// ---------------------------------------------------------------------------
+//  Injektionen. WICHTIG: Design-Exporte bauen den <body> per JS um – ein
+//  einfach eingefügtes <div> würde überschrieben. Deshalb: Styles in den
+//  <head> (überlebt immer) und ein Skript am Datei-ENDE, das die Leiste erst
+//  NACH dem Entpacken anhängt und per Beobachter dranbleibt.
+// ---------------------------------------------------------------------------
+
 const kopfInjektion = `
 <meta name="robots" content="noindex, nofollow">
-<title>Design-Vorschau – ${kunde.replace(/[<>&"]/g, '')}</title>
 <style id="kanbuk-demo-stil">
   /* Kanbuk-Vorschau-Leiste – UNTEN, damit sie klebenden Design-Headern nicht
-     in die Quere kommt. Weißer „Cloud"-Look mit schwarzem Zeichen, violettem
-     Vorschau-Text und pulsierendem grünem Live-Punkt – feste Markenwerte,
-     unabhängig vom Kundendesign. */
+     in die Quere kommt. Weißer „Cloud"-Look, feste Markenwerte. */
   #kanbuk-demo-leiste {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 2147483000;
     display: flex; align-items: center; justify-content: center; gap: .6rem;
@@ -162,8 +154,6 @@ const fussInjektion = `
     hinweis.appendChild(knopf);
     document.body.appendChild(hinweis);
   }
-  // Nach dem Entpacken einbauen – und dranbleiben, falls der Export den
-  // <body> später nochmals umbaut (Beobachter hängt die Leiste wieder an).
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', einbauen);
   else einbauen();
   new MutationObserver(einbauen).observe(document.documentElement, { childList: true, subtree: true });
@@ -171,20 +161,105 @@ const fussInjektion = `
 </script>
 `;
 
-// In den <head> (bzw. an den Anfang, falls keiner existiert) …
-if (/<head[^>]*>/i.test(html)) {
-  html = html.replace(/<head[^>]*>/i, (m) => m + kopfInjektion);
-} else {
-  html = kopfInjektion + html;
+function injizieren(html) {
+  let raus = html;
+  raus = /<head[^>]*>/i.test(raus)
+    ? raus.replace(/<head[^>]*>/i, (m) => m + kopfInjektion)
+    : kopfInjektion + raus;
+  raus = /<\/html>\s*$/i.test(raus)
+    ? raus.replace(/<\/html>\s*$/i, `${fussInjektion}\n</html>\n`)
+    : raus + fussInjektion;
+  return raus;
 }
-// … und ans Datei-Ende.
-html = /<\/html>\s*$/i.test(html) ? html.replace(/<\/html>\s*$/i, `${fussInjektion}\n</html>\n`) : html + fussInjektion;
 
 // ---------------------------------------------------------------------------
-//  Demo-Ordner schreiben
+//  Quelle vorbereiten: Zip entpacken bzw. Einzeldatei übernehmen
 // ---------------------------------------------------------------------------
 mkdirSync(ziel, { recursive: true });
-writeFileSync(join(ziel, 'index.html'), html, 'utf-8');
+let routen = [];
+
+const endung = extname(quelle).toLowerCase();
+let tmpEntpackt = null;
+
+if (endung === '.zip' || statSync(quelle).isDirectory()) {
+  // --- A) Projekt-Archiv / Ordner: als echte Mehrseiten-Site hosten ---------
+  let quellOrdner = quelle;
+  if (endung === '.zip') {
+    tmpEntpackt = mkdtempSync(join(tmpdir(), 'kanbuk-demo-'));
+    // Windows bringt bsdtar mit (kann Zip); das GNU-tar der Git-Bash kann es nicht.
+    const tarExe = process.platform === 'win32' ? 'C:\\Windows\\System32\\tar.exe' : 'tar';
+    const r = spawnSync(tarExe, ['-xf', quelle, '-C', tmpEntpackt], { stdio: 'inherit' });
+    if (r.status !== 0) {
+      console.error('✗ Zip ließ sich nicht entpacken.');
+      process.exit(1);
+    }
+    quellOrdner = tmpEntpackt;
+  }
+
+  // Seiten = die dc.html-Dateien der obersten Ebene. Bundles („…-bundle") sind
+  // Zwischenprodukte für den Standalone-Export, fertige Standalones („*.html"
+  // ohne .dc.) sind Duplikate – beides wird übersprungen.
+  const eintraege = readdirSync(quellOrdner);
+  const seiten = eintraege.filter((f) => f.endsWith('.dc.html') && !f.endsWith('-bundle.dc.html'));
+  if (seiten.length === 0) {
+    console.error('✗ Keine Seiten (*.dc.html) im Archiv gefunden – ist das ein Claude-Design-Projekt-Archiv?');
+    process.exit(1);
+  }
+
+  // uploads/ ist Rohmaterial des Kunden (oft mit Müll wie .crdownload) und
+  // wird nur mitgenommen, wenn eine Seite wirklich darauf verweist.
+  const seitenInhalte = new Map(seiten.map((s) => [s, readFileSync(join(quellOrdner, s), 'utf-8')]));
+  const brauchtUploads = [...seitenInhalte.values()].some((t) => t.includes('uploads/'));
+
+  const UEBERSPRINGEN = new Set(['.thumbnail']);
+  cpSync(quellOrdner, ziel, {
+    recursive: true,
+    filter: (src) => {
+      const name = basename(src);
+      const rel = src.slice(quellOrdner.length).replace(/\\/g, '/');
+      if (UEBERSPRINGEN.has(name)) return false;
+      if (!brauchtUploads && /^\/?uploads(\/|$)/.test(rel)) return false;
+      if (name.endsWith('-bundle.dc.html')) return false;
+      if (name.endsWith('.html') && !name.endsWith('.dc.html')) return false; // fertige Standalones
+      if (name.endsWith('.zip')) return false;
+      return true;
+    },
+  });
+
+  // Kanbuk-Leiste + Sperren in JEDE Seite injizieren
+  for (const s of seiten) {
+    writeFileSync(join(ziel, s), injizieren(seitenInhalte.get(s)), 'utf-8');
+  }
+
+  // Startseite unter "/": Kopie von index.dc.html (bzw. der ersten Seite).
+  const start = seiten.includes('index.dc.html') ? 'index.dc.html' : seiten.sort()[0];
+  writeFileSync(join(ziel, 'index.html'), readFileSync(join(ziel, start), 'utf-8'), 'utf-8');
+
+  // Editor-Zustandsdatei: image-slot.js fragt sie an – ohne sie gäbe es auf
+  // jeder Galerie-Seite eine (harmlose) 404, die den Sicht-Check verunreinigt.
+  if (existsSync(join(ziel, 'image-slot.js')) && !existsSync(join(ziel, '.image-slots.state.json'))) {
+    writeFileSync(join(ziel, '.image-slots.state.json'), '{}\n', 'utf-8');
+  }
+
+  routen = seiten.map((s) => '/' + s);
+  console.log(`✓ Projekt-Archiv übernommen: ${seiten.length} Seite(n) → ${seiten.join(', ')}`);
+} else {
+  // --- B) Einzelne Standalone-Datei -----------------------------------------
+  let html = readFileSync(quelle, 'utf-8');
+  const groesseMb = (statSync(quelle).size / 1024 / 1024).toFixed(1);
+  if (statSync(quelle).size < 100 * 1024) {
+    console.warn(`⚠ Die Datei ist nur ${groesseMb} MB klein – sicher der komplette Standalone-Export?`);
+  }
+  writeFileSync(join(ziel, 'index.html'), injizieren(html), 'utf-8');
+  routen = ['/'];
+  console.log(`✓ Standalone übernommen (${groesseMb} MB)`);
+}
+
+if (tmpEntpackt) rmSync(tmpEntpackt, { recursive: true, force: true });
+
+// ---------------------------------------------------------------------------
+//  Google-Sperre + Header
+// ---------------------------------------------------------------------------
 writeFileSync(join(ziel, 'robots.txt'), 'User-agent: *\nDisallow: /\n', 'utf-8');
 writeFileSync(
   join(ziel, 'vercel.json'),
@@ -208,75 +283,75 @@ writeFileSync(
 );
 
 console.log(`✓ Demo gebaut: ${ziel}
-  Quelle: ${quelle} (${groesseMb} MB)
   Drin: Kanbuk-Leiste (unten), Handy-Hinweis, noindex + robots + X-Robots-Tag
 `);
 
 // ---------------------------------------------------------------------------
 //  Sicht-Check der VERPACKTEN Demo – bevor der Link zu einem Lead geht.
-//  Misst, was messbar ist (Überlauf über die 1280er-Bühne, JS-Fehler, kaputte
-//  Bilder/Ressourcen) und macht einen Ganzseiten-Screenshot für das, was nur
-//  Augen beurteilen können (Kontrast, dunkle Schrift auf dunklem Grund,
-//  Layout-Brüche). Der Screenshot MUSS danach angesehen werden.
-//
-//  Läuft nur, wenn playwright installiert ist (Template-Ordner bzw. Klon nach
-//  `npm install`) – ohne wird die Prüfung übersprungen, das Verpacken selbst
-//  braucht weiterhin kein npm install.
+//  Misst je Seite: Überlauf über die 1280er-Bühne, JS-Fehler, kaputte
+//  Ressourcen, leere Bilder – und macht Screenshots für die Augen-Prüfung
+//  (Kontrast, dunkel-auf-dunkel, Layout beurteilt kein Skript).
 // ---------------------------------------------------------------------------
 try {
   const { chromium } = await import('playwright');
   const { starteDistServer } = await import('./lib/dist-server.mjs');
   const { basis, stop } = await starteDistServer(ziel);
-
   const browser = await chromium.launch();
-  const page = await (await browser.newContext({ viewport: { width: 1280, height: 900 } })).newPage();
-
-  const jsFehler = [];
-  const kaputt = [];
-  page.on('pageerror', (e) => jsFehler.push(e.message.split('\n')[0]));
-  page.on('console', (m) => m.type() === 'error' && jsFehler.push(m.text().split('\n')[0]));
-  page.on('requestfailed', (r) => kaputt.push(`${r.url()} (${r.failure()?.errorText})`));
-  page.on('response', (r) => r.status() >= 400 && kaputt.push(`${r.url()} (HTTP ${r.status()})`));
-
-  await page.goto(basis + '/', { waitUntil: 'load' });
-  await page.waitForTimeout(1500); // Selbst-Entpacken + Bilder abwarten
-
-  // Leere Bild-Kacheln (Export unvollständig?) und Überlauf über die Bühne
-  const messung = await page.evaluate(() => {
-    const doc = document.documentElement;
-    const kaputteBilder = [...document.images]
-      .filter((i) => i.complete && i.naturalWidth === 0 && !i.src.startsWith('data:'))
-      .slice(0, 5)
-      .map((i) => i.src);
-    let ueberlauf = null;
-    if (doc.scrollWidth > doc.clientWidth + 1) {
-      const schuldige = [];
-      for (const el of document.querySelectorAll('body *')) {
-        const r = el.getBoundingClientRect();
-        if (r.right > doc.clientWidth + 1 || r.left < -1) {
-          schuldige.push(`<${el.tagName.toLowerCase()}${el.className ? '.' + String(el.className).split(' ')[0] : ''}> bis ${Math.round(r.right)}px`);
-          if (schuldige.length >= 3) break;
-        }
-      }
-      ueberlauf = { breite: doc.scrollWidth, schuldige };
-    }
-    return { kaputteBilder, ueberlauf };
-  });
-
-  const shot = join(ziel, 'pruefung-demo.png');
-  await page.screenshot({ path: shot, fullPage: true });
-  await browser.close();
-  stop();
 
   const warnungen = [];
-  if (messung.ueberlauf) {
-    warnungen.push(
-      `ÜBERLAUF über die 1280er-Bühne (${messung.ueberlauf.breite}px breit):\n      ${messung.ueberlauf.schuldige.join('\n      ')}`,
-    );
+  const shots = [];
+
+  for (const route of routen) {
+    const page = await (await browser.newContext({ viewport: { width: 1280, height: 900 } })).newPage();
+    const jsFehler = [];
+    const kaputt = [];
+    page.on('pageerror', (e) => jsFehler.push(e.message.split('\n')[0]));
+    page.on('console', (m) => m.type() === 'error' && jsFehler.push(m.text().split('\n')[0]));
+    page.on('requestfailed', (r) => kaputt.push(`${r.url()} (${r.failure()?.errorText})`));
+    page.on('response', (r) => r.status() >= 400 && kaputt.push(`${r.url()} (HTTP ${r.status()})`));
+
+    await page.goto(basis + route, { waitUntil: 'load' });
+    await page.waitForTimeout(1500);
+
+    const messung = await page.evaluate(() => {
+      const doc = document.documentElement;
+      const kaputteBilder = [...document.images]
+        .filter((i) => i.complete && i.naturalWidth === 0 && !i.src.startsWith('data:'))
+        .slice(0, 5)
+        .map((i) => i.src);
+      let ueberlauf = null;
+      if (doc.scrollWidth > doc.clientWidth + 1) {
+        const schuldige = [];
+        for (const el of document.querySelectorAll('body *')) {
+          const r = el.getBoundingClientRect();
+          if (r.right > doc.clientWidth + 1 || r.left < -1) {
+            schuldige.push(`<${el.tagName.toLowerCase()}${el.className ? '.' + String(el.className).split(' ')[0] : ''}> bis ${Math.round(r.right)}px`);
+            if (schuldige.length >= 3) break;
+          }
+        }
+        ueberlauf = { breite: doc.scrollWidth, schuldige };
+      }
+      return { kaputteBilder, ueberlauf };
+    });
+
+    const shotName = `pruefung-demo${route === '/' ? '' : '-' + route.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '')}.png`;
+    await page.screenshot({ path: join(ziel, shotName), fullPage: true });
+    shots.push(shotName);
+
+    const wo = routen.length > 1 ? `${route}: ` : '';
+    if (messung.ueberlauf) {
+      warnungen.push(
+        `${wo}ÜBERLAUF über die 1280er-Bühne (${messung.ueberlauf.breite}px):\n      ${messung.ueberlauf.schuldige.join('\n      ')}`,
+      );
+    }
+    for (const f of [...new Set(jsFehler)].slice(0, 3)) warnungen.push(`${wo}JS-Fehler -> ${f.slice(0, 110)}`);
+    for (const k of [...new Set(kaputt)].slice(0, 3)) warnungen.push(`${wo}lädt nicht -> ${k.slice(0, 110)}`);
+    for (const b of messung.kaputteBilder) warnungen.push(`${wo}leeres Bild -> ${b.slice(0, 110)}`);
+    await page.context().close();
   }
-  for (const f of [...new Set(jsFehler)].slice(0, 5)) warnungen.push(`JS-Fehler -> ${f.slice(0, 120)}`);
-  for (const k of [...new Set(kaputt)].slice(0, 5)) warnungen.push(`lädt nicht -> ${k.slice(0, 120)}`);
-  for (const b of messung.kaputteBilder) warnungen.push(`leeres Bild (Export unvollständig?) -> ${b.slice(0, 120)}`);
+
+  await browser.close();
+  stop();
 
   if (warnungen.length > 0) {
     console.log('⚠ SICHT-CHECK: Das Design bringt Probleme mit – VOR dem Verschicken klären');
@@ -284,11 +359,11 @@ try {
     for (const w of warnungen) console.log(`  • ${w}`);
     console.log('');
   } else {
-    console.log('✓ Sicht-Check: kein Überlauf, keine JS-Fehler, alle Bilder laden.');
+    console.log(`✓ Sicht-Check über ${routen.length} Seite(n): kein Überlauf, keine JS-Fehler, alle Bilder laden.`);
   }
-  console.log(`  PFLICHT vor dem Verschicken: ${shot.split(/[\\/]/).pop()} im Demo-Ordner ANSEHEN –
-  Kontrast (dunkle Schrift auf dunklem Grund!), Layout, Vollständigkeit
-  beurteilen nur Augen, kein Skript.
+  console.log(`  PFLICHT vor dem Verschicken: die Screenshots im Demo-Ordner ANSEHEN
+  (${shots.join(', ')}) –
+  Kontrast, Layout und Vollständigkeit beurteilen nur Augen, kein Skript.
 `);
 } catch (e) {
   console.log(`↷ Sicht-Check übersprungen (${e.message.split('\n')[0].slice(0, 60)}…)
@@ -297,16 +372,15 @@ try {
 `);
 }
 
+// ---------------------------------------------------------------------------
+//  Hochladen
+// ---------------------------------------------------------------------------
 if (deployen) {
-  console.log('→ Lade zu Vercel hoch (Projekt: kanbuk-demo-' + slug + ') …');
-  const r = spawnSync(`npx vercel --prod --name kanbuk-demo-${slug}`, {
-    cwd: ziel,
-    stdio: 'inherit',
-    shell: true,
-  });
+  console.log(`→ Lade zu Vercel hoch (Projekt: ${basename(ziel)}) …`);
+  const r = spawnSync('npx vercel --prod --yes', { cwd: ziel, stdio: 'inherit', shell: true });
   process.exit(r.status ?? 0);
 } else {
-  console.log(`Hochladen (im Demo-Ordner, erster Lauf fragt nach dem Vercel-Team):
+  console.log(`Hochladen (im Demo-Ordner, erster Lauf fragt ggf. nach dem Vercel-Team):
     cd "${ziel}"
     npx vercel --prod
 

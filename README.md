@@ -32,9 +32,11 @@ sind egal. Das wird beim Portieren umgebaut.
 > dem Kunden direkt als Verkaufs-Demo zeigen (Vollbild-Vorschau, vor Ort oder
 > per Bildschirmteilung) – 5–10 min Aufwand statt einer Stunde. Schritt 2 folgt
 > dann erst bei Kauf oder ernsthaftem Interesse. **Schickbarer Link ohne Port:**
-> `npm run demo -- --datei "<Standalone-Export>" --kunde "<Name>"` verpackt den
-> Claude-Design-Export (Kanbuk-Leiste, unsichtbar für Google, Handy-Hinweis)
-> und macht ihn per Vercel teilbar. Funktioniert im Template-Ordner UND in jedem
+> In Claude Design „Export → Project archive" (gratis, sofort, alle Seiten),
+> dann `npm run demo -- --datei "<Archiv.zip>" --kunde "<Name>"` – verpackt das
+> Design als echte Mehrseiten-Demo (Kanbuk-Leiste, unsichtbar für Google,
+> Handy-Hinweis, Sicht-Check je Seite) und macht sie per Vercel teilbar.
+> (Der „Standalone HTML"-Export geht auch, kostet aber Claude-Kontingent.) Funktioniert im Template-Ordner UND in jedem
 > frischen Kundenordner (sogar ohne `npm install`) – die Demo landet immer
 > außerhalb in `kanbuk-demos/`, das Projekt bleibt sauber. Wer lieber gleich die echte Web-Vorschau
 > will, macht Schritt 2 sofort. Alles ist vorgesehen.
@@ -149,7 +151,7 @@ Details: [CLAUDE.md, Abschnitt 7a](CLAUDE.md).
 | `npm run bogen -- --fotos` | Kontaktbögen: alle Fotos/Screenshots auf wenigen Übersichtsbildern |
 | `npm run holen -- --url <…> --ziel fotos/x.jpg` | Datei herunterladen UND auf Unversehrtheit prüfen |
 | `npm run preisliste` | `daten/preisliste.json` (aus Claude Design) validieren → typsichere `daten/preisliste.ts` |
-| `npm run demo -- --datei <export> --kunde "…"` | Claude-Design-Export als schickbare Demo hosten (ohne Port) |
+| `npm run demo -- --datei <archiv.zip> --kunde "…"` | Design-Projekt-Archiv als schickbare Mehrseiten-Demo hosten (ohne Port) |
 | `npm run sicht` | Sichtprüfung im echten Browser: Screenshots aller Seiten bei 350/768/1440 px + Überlauf-/Fehler-Messung |
 | `npm run platzhalter -- --name "…"` | Textlose Platzhalter + OG-Bild + Favicon (nach `fotos/`) |
 | `npm run stock -- --thema "…"` | Stock-Platzhalter (braucht `PEXELS_API_KEY` in `.env`) |
