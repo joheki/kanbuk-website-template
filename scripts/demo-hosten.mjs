@@ -17,7 +17,8 @@
  *     Verbraucht beim Export Claude-Kontingent; enthält nur die EINE Datei.
  *       npm run demo -- --datei "C:/…/X (Standalone).html" --kunde "Cafe Sonne"
  *
- *  Danach zeigt das Skript den Vercel-Befehl (mit --deploy führt es ihn aus).
+ *  Danach zeigt das Skript den Vercel-Befehl (mit --deploy führt es ihn aus)
+ *  und setzt die Marken-Adresse demo-<kunde>.kanbuk.com (s. MARKEN_DOMAIN).
  *  Es ist eine DESIGN-Demo (1280-px-Bühne, Prototyp-Klicks) – kein Produkt.
  *  Die echte, responsive Website entsteht erst beim Port.
  * =============================================================================
@@ -32,6 +33,12 @@ import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
 const SKRIPT_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
+
+/* Marken-Domain für Demo-Links: demo-<kunde>.kanbuk.com statt …vercel.app.
+   Voraussetzung (EINMALIG, bei der Domain-Verwaltung des Anbieters):
+   ein Wildcard-Eintrag  CNAME  *  →  cname.vercel-dns.com
+   Solange der fehlt, fällt das Skript automatisch auf …vercel.app zurück. */
+const MARKEN_DOMAIN = 'kanbuk.com';
 
 const args = process.argv.slice(2);
 const wert = (name, standard) => {
@@ -378,12 +385,38 @@ try {
 if (deployen) {
   console.log(`→ Lade zu Vercel hoch (Projekt: ${basename(ziel)}) …`);
   const r = spawnSync('npx vercel --prod --yes', { cwd: ziel, stdio: 'inherit', shell: true });
-  process.exit(r.status ?? 0);
+  if ((r.status ?? 1) !== 0) process.exit(r.status ?? 1);
+
+  // Marken-Adresse draufsetzen. Zwei Versuche: die allererste Zertifikats-
+  // Ausstellung je Unterdomain braucht manchmal ein paar Sekunden.
+  const markenAdresse = `demo-${slug}.${MARKEN_DOMAIN}`;
+  const kurzAdresse = `${basename(ziel)}.vercel.app`;
+  let geklappt = false;
+  for (let versuch = 1; versuch <= 2 && !geklappt; versuch++) {
+    if (versuch > 1) Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 8000);
+    const a = spawnSync(`npx vercel alias set https://${kurzAdresse} ${markenAdresse}`, {
+      cwd: ziel, shell: true, encoding: 'utf-8',
+    });
+    geklappt = a.status === 0;
+  }
+  if (geklappt) {
+    console.log(`
+✓ Demo-Link (DIESEN verschicken): https://${markenAdresse}
+  (Ersatz-Adresse: https://${kurzAdresse})`);
+  } else {
+    console.log(`
+⚠ Marken-Adresse https://${markenAdresse} noch nicht aktiv.
+  Vermutlich fehlt der einmalige DNS-Eintrag beim Domain-Anbieter:
+  CNAME  *  →  cname.vercel-dns.com   (gilt danach für ALLE Demos)
+  Bis dahin diesen Link verschicken: https://${kurzAdresse}`);
+  }
+  process.exit(0);
 } else {
   console.log(`Hochladen (im Demo-Ordner, erster Lauf fragt ggf. nach dem Vercel-Team):
     cd "${ziel}"
     npx vercel --prod
+    npx vercel alias set https://${basename(ziel)}.vercel.app demo-${slug}.${MARKEN_DOMAIN}
 
-  Dem Lead NUR den kurzen Alias schicken (https://….vercel.app) und vorher
-  einmal selbst im privaten Fenster öffnen.`);
+  Dem Lead den Marken-Link schicken (https://demo-${slug}.${MARKEN_DOMAIN}) und
+  vorher einmal selbst im privaten Fenster öffnen.`);
 }
