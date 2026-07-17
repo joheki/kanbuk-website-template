@@ -38,6 +38,33 @@ SPRACHE
 - Ansprache durchgehend einheitlich: entweder Sie oder du. Richte dich nach
   dem Auftritt des Betriebs (Beisl/Studio eher "du", Praxis/Kanzlei "Sie").
 - Kurze, klare Sätze. Kein Werbe-Blabla.
+- Jeder Text ist FINAL – kein „Beispieltext", kein Lorem, keine Platzhalter.
+- Laut-Lese-Regel: Lies jeden Satz innerlich laut. Klingt er nach Broschüre
+  statt nach einem Wirt/einer Friseurin, schreib ihn um.
+- Verbotene Floskeln (sofort ersetzen): „Willkommen auf unserer Website",
+  „Wir freuen uns, Sie begrüßen zu dürfen", „einzigartig", „Genuss pur",
+  „Oase der Entspannung", „Tradition trifft Moderne", „Qualität steht bei
+  uns an erster Stelle".
+- Konkret schlägt blumig: „Apfelstrudel, jeden Tag frisch gebacken" statt
+  „köstliche Mehlspeisen-Kreationen" – aber NUR mit belegten Details.
+
+BÜHNE & MASSE (Pflicht – erspart Korrekturrunden)
+- Baue für eine feste Bühne von 1280 px Breite. KEIN Element darf darüber
+  hinausragen – prüfe das bei jeder Sektion, bevor du sie zeigst.
+- Abstände NUR aus dieser Skala: 8 / 12 / 16 / 24 / 40 / 64 / 92 px.
+  Nichts dazwischen. (Der Seitenrand ist 40 px, die Inhaltsbreite max. 1280 px.)
+- Schriftgrößen NUR aus dieser Skala: 14 / 16 / 20 / 28 / 40 / 56 / 72 px.
+- Jede Seite hat genau EINE Hauptüberschrift, darunter saubere Hierarchie.
+Diese Skalen sind die Maße des Umsetzungs-Motors – hältst du sie ein, wird
+das Design 1:1 übernommen statt umgerechnet.
+
+INTERAKTION NUR ANDEUTEN, NICHT PROGRAMMIEREN
+Tabs, Slider, Akkordeons, Filter, Lightbox: Gestalte den sichtbaren Zustand
+und beschrifte ihn kurz („Tab-Leiste mit Kategorien Frühstück/Speisen/…").
+Baue KEINE eigene Klick-Logik – der Motor bringt die fertige, getestete
+Mechanik mit. Jede Minute Fehlersuche an Prototyp-Klicks ist verlorene Zeit.
+Formulare: nur die Felder als Liste zeigen (Name, E-Mail, Datum …), nicht
+funktional bauen.
 
 KEINE ERFUNDENEN FAKTEN
 - Keine erfundenen Zahlen, Jahreszahlen, Mengen oder Auszeichnungen.
@@ -142,7 +169,46 @@ WAS DU FREI ENTSCHEIDEST
 Layout, Farben, Schriften, Bildsprache, Komposition, Stimmung. Sei mutig –
 die Seite soll nicht nach Baukasten aussehen. Um Handy-Ansicht, Ladezeit
 und Technik kümmert sich der Motor danach.
+
+SELBSTPRÜFUNG VOR JEDER ABGABE (Pflicht – erst beheben, DANN zeigen)
+1. Ragt irgendein Element über die 1280-px-Bühne? → beheben
+2. Jeder Abstand aus der Skala (8/12/16/24/40/64/92)? → beheben
+3. Alle Texte final, laut gelesen, keine Floskel aus der Verbotsliste?
+4. Genau eine Hauptüberschrift je Seite?
+5. Pflichtangaben vollständig (Adresse, Zeiten, Telefon, Mail)?
+6. Preisliste/Speisekarte vorhanden → liegt daten/preisliste.json bei?
+7. Jedes Foto nach dem Muster <slot>--<inhalt>.jpg benannt?
+Melde in einem Satz, dass du diese sieben Punkte geprüft und behoben hast.
+
+ABGABE-BLOCK (wenn der Auftraggeber „fertig" sagt)
+Gib zum Schluss diesen Block als Klartext aus – er ist die Übergabe an den
+Umsetzungs-Motor:
+- Seiten: (Liste mit je einem Satz Zweck)
+- Farben: (alle Hex-Werte mit Rolle: Hintergrund/Text/Primär/…)
+- Schriften: (Familien + verwendete Schnitte)
+- Animations-Stimmung: aus/dezent/lebendig/elegant
+- Zweisprachig: ja/nein
+- Dateien im Projekt: Fotos (Anzahl), preisliste.json ja/nein, PDFs
+- Offene Lücken: was fehlt noch vom Kunden (ehrlich!)
 ```
+
+---
+
+## Für dich: Was du in Claude Design NICHT reparieren musst
+
+Der Prototyp dort ist eine **Reinzeichnung, kein Produkt**. Der Motor übernimmt
+keine Pixel-Werte und keine Prototyp-Klicklogik – er baut mit eigenen Maßen und
+eigenen, getesteten Bausteinen neu. Deshalb gilt:
+
+- **Ignorieren** (kostet nur Zeit): kleine Überläufe, Prototyp-Klick-Bugs,
+  Handy-Ansicht, Ladezeit. Der Motor prüft das später maschinell nach.
+- **In Claude Design ausbessern lassen** (schlägt aufs Endprodukt durch):
+  Texte, Inhalte, Foto-Auswahl/-Benennung, Seitenaufteilung, Farb-/Schrift-Wahl.
+- **Arbeitsweise:** Seite für Seite abnehmen statt alles auf einmal. Bei einem
+  Fehler: Screenshot in den Design-Chat + „Führe die Selbstprüfung aus dem
+  Briefing durch und behebe, bevor du erneut zeigst."
+- Der Satz „Ich habe es visuell geprüft" von Claude Design ist ein Vorsatz,
+  keine Garantie – die verlässliche Prüfung macht der Motor (sicht/interaktion).
 
 ---
 
