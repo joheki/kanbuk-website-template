@@ -2,10 +2,12 @@
 /**
  * Layout für die Rechts-Unterseiten (/impressum, /datenschutz).
  *
- * Diese Seiten sind MOTOR-Gebiet, nicht Design-Gebiet: Sie müssen lesbar,
- * vollständig und auffindbar sein – gestalterisch reicht schlicht. Sie
- * benutzen die Design-Tokens, damit sie zum Rest passen, brauchen aber kein
- * eigenes Design aus Claude Design.
+ * INHALTLICH Motor-Gebiet (automatisch erzeugt, immer formal) – aber OPTISCH
+ * Teil der Website. BEIM PORT PFLICHT (siehe /port, Etappe 4): Kopf- und
+ * Fußzeile des Kunden hier einbinden und den Zurück-Link samt Mini-Footer
+ * entfernen – Impressum & Datenschutz dürfen kein Sonderbereich sein. Der
+ * Zurück-Link unten ist nur der Notbehelf, solange es noch keinen Kunden-Kopf
+ * gibt (Template-Referenzseite).
  */
 import BaseLayout from './BaseLayout.astro';
 import { site } from '../../content.config';

@@ -197,6 +197,12 @@ wird dabei ersetzt.
 - Formulare über `<Formular id="…" />` – nie von Hand nachbauen.
 - Social-Media-Icons über `<SocialLinks />` (Daten in `betrieb.socialLinks`) –
   keine Icon-Dateien erfinden, keine Icons aus dem Design-Export kopieren.
+  Zeigt das Design Icon-Kreise o. Ä., den Baustein per `:global(.social-links…)`
+  in diese Optik kleiden – nie Buchstaben („IG") als Icon-Ersatz stehen lassen.
+- **Rechtsseiten sind kein Sonderbereich:** Sobald Kopf- und Fußzeile des Kunden
+  gebaut sind, beide in `src/layouts/RechtsLayout.astro` einbinden (Kopf + Fuss
+  um den Textblock, Zurück-Link und Mini-Footer entfernen). Impressum und
+  Datenschutz müssen aussehen wie jede andere Unterseite der Website.
 - **Zweisprachiges Design?** Entweder die englischen Seiten als ECHTE Routen bauen
   (`src/pages/en/…`, dann `sprachen: ['de','en']`) – oder für die Demo bei
   `sprachen: ['de']` bleiben und die zweite Sprache in STAND.md als offenen Punkt
