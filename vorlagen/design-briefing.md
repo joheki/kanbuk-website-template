@@ -64,6 +64,75 @@ INHALTE JE BRANCHE (nur was zutrifft)
 - Studio: Kursplan (Wochentage), Preise/Mitgliedschaften, Probestunde.
 - KFZ: Leistungen, Terminanfrage, Ablauf.
 
+PREISLISTE ALS DATEN-DATEI (Pflicht, sobald es eine Speisekarte,
+Preisliste, Behandlungsliste oder einen Kursplan gibt)
+- Gestalte die Karte auf der Seite wie gewohnt – lege die Daten aber
+  ZUSÄTZLICH als Datei daten/preisliste.json ab. Der Motor liest sie beim
+  Portieren automatisch ein; ohne die Datei muss jede Position von Hand
+  abgetippt werden (fehleranfällig).
+- Halte dich EXAKT an dieses Schema – keine anderen Schlüssel, alle Preise
+  als Text mit Komma und €-Zeichen:
+
+  {
+    "kategorien": [
+      {
+        "id": "mehlspeisen",
+        "titel": "Mehlspeisen",
+        "gruppen": [
+          {
+            "titel": "Hausgemacht",
+            "positionen": [
+              { "name": "Apfelstrudel",
+                "beschreibung": "mit Rosinen",
+                "preis": "4,80 €",
+                "allergene": "A C" },
+              { "name": "Topfenstrudel",
+                "varianten": [
+                  { "groesse": "klein", "preis": "4,20 €" },
+                  { "groesse": "groß",  "preis": "5,90 €" }
+                ],
+                "allergene": "A C G" }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+
+- Erlaubte Schlüssel je Position: name, beschreibung, preis, varianten
+  (je Variante: groesse, preis), allergene, dauer (z. B. "60 Min" bei
+  Behandlungen/Kursen), tags (z. B. ["veg"]), bild (Dateiname in fotos/).
+- Optional auf oberster Ebene: "allergene" als Legende (z. B.
+  { "A": "Glutenhaltiges Getreide" }) und "hinweise" (z. B.
+  ["Alle Preise inkl. MwSt."]).
+- "preis" ODER "varianten" – nie beides. Zeilen ganz ohne Preis nur für
+  reine Hinweise ("Alle Gerichte auch als kleine Portion erhältlich.").
+- Die "id" jeder Kategorie: nur Kleinbuchstaben, Ziffern, Bindestrich
+  (wird zum Tab-Anker), jede id nur einmal.
+- Gastronomie: Allergene je Speise sind Pflicht (Kennzeichnung A–R).
+
+FOTOS: DER DATEINAME MUSS DEN INHALT BENENNEN
+Jede Bilddatei heißt <slot>--<inhalt>.jpg, z. B. hero--schanigarten.jpg,
+galerie--melange.jpg, team--inhaberin.jpg. Ein Dateiname, der lügt (etwa
+"eingang.jpg" mit einem Foto der Kaffeedosen), kostet später echte Prüfzeit
+und riskiert vertauschte Bilder auf der fertigen Seite.
+
+PFLICHTANGABEN (müssen im Design stehen, sonst bleiben Lücken)
+- Vollständige Adresse des Betriebs
+- Öffnungszeiten (alle Tage, auch Ruhetage)
+- Telefonnummer und E-Mail-Adresse
+- Falls es eine alte Website gibt: von dort auch die Impressumsdaten
+  (Firmenwortlaut, UID, Firmenbuchnummer) mitnehmen
+
+SPRACHEN
+Nur Deutsch, außer der Auftrag sagt ausdrücklich etwas anderes. Englische
+Seiten werden NUR gebaut, wenn Zweisprachigkeit beauftragt ist – halte im
+Design fest, ob ja oder nein.
+
+WIE SOLL SICH DIE SEITE ANFÜHLEN? (eine Zeile im Design vermerken)
+Animations-Stimmung: „aus", „dezent", „lebendig" oder „elegant" – der Motor
+setzt das passende Einblende-Verhalten um.
+
 RECHTLICHES
 - Kein Cookie-Banner gestalten. Die fertige Seite setzt keine Cookies und
   braucht keinen.

@@ -67,9 +67,10 @@ Improvisier-Beispiele – so wird entschieden, nicht gefragt:
 ## Etappe 0 – Vorbereitung
 
 1. `npm install`, falls `node_modules` fehlt.
-2. `package.json → name` auf `kanbuk-<kunde>` setzen.
-   **Wichtig:** Das schaltet das Prüf-Tor scharf (solange der Name
-   `kanbuk-website-template` lautet, hält es die Referenzdaten für Absicht).
+
+(Die Umbenennung von `package.json → name` passiert bewusst erst am ENDE von
+Etappe 3 – sie schaltet das Prüf-Tor scharf, und das ist erst sinnvoll, wenn
+die Referenzdaten aus der Config raus sind. Vorher wäre Rot kein Signal.)
 
 ---
 
@@ -109,16 +110,33 @@ kommt ins Lücken-Inventar.
   dort ab – oft schon vor dem Port. Diese haben **immer Vorrang**.
 
   Reihenfolge der Beschaffung:
-  1. **Was in `fotos/` liegt** – vom Nutzer abgelegt. Anhand von Dateinamen und
-     Bildinhalt selbst zuordnen (`hero`, `aussen`, `team-anna` sind eindeutig genug).
-     Im Zweifel: entscheiden und im Bericht nennen – **nicht fragen**.
+  1. **Was in `fotos/` liegt** – vom Nutzer abgelegt.
   2. **Aus dem Design-Projekt** – dort liegen meist die Uploads des Kunden
      (`uploads/…`, `assets/photos/…`). Mit DesignSync auflisten und holen.
-  3. **Von der bestehenden Website des Betriebs** (`curl`) – die Rechte liegen beim
+  3. **Von der bestehenden Website des Betriebs** – mit `npm run holen -- --url <…>
+     --ziel fotos/<name>.jpg` (lädt UND prüft die Datei). Die Rechte liegen beim
      Betrieb, für seine eigene Demo in Ordnung; vor dem Live-Gang bestätigen lassen.
   4. `npm run stock -- --thema "<passend>"` – **nur Platzhalter**, muss ins
      Lücken-Inventar.
   5. `npm run platzhalter -- …` als letzte Wahl.
+
+  **Verbindliche Transfer-Regeln (im Piloten gingen so 2 Logos und 1 PDF kaputt):**
+  - **Binärdaten NIEMALS als Base64 durch den Chat tragen** – beim Abtippen gehen
+    zuverlässig Bytes verloren, und die Datei sieht trotzdem gültig aus (Header
+    heil, Inhalt kaputt).
+  - DesignSync-Ergebnisse landen als „persisted output"-Dateien auf der Platte –
+    von DORT per kleinem Skript dekodieren, nie aus dem Chatfenster.
+  - **Jede geholte Datei sofort prüfen:** `npm run holen` macht das automatisch
+    (volle Bild-Dekodierung, PDF-`%%EOF`, keine HTML-Fehlerseite). Händisch geholte
+    Dateien nachprüfen.
+  - `get_file` kappt bei 256 KiB – gekappte Dateien am Original der bestehenden
+    Kundenwebsite per `npm run holen` neu ziehen.
+
+  **Foto-Sichtpflicht: Dateinamen können lügen.** Vor der Zuordnung
+  `npm run bogen -- --fotos` laufen lassen und die Kontaktbögen ANSEHEN – jedes
+  Kundenfoto wird mit eigenen Augen geprüft, bevor es einem Platz zugeordnet wird.
+  (Im Piloten waren 2 von 19 Fotos vertauscht; ohne Sichtung wäre das online
+  gegangen.) Zuordnung dann selbst entscheiden und im Bericht nennen – nicht fragen.
 
   Einbinden ausschließlich über `astro:assets` (`<Image>`) und `bild('name.jpg')` aus
   `src/lib/bilder.ts` – nie als rohes `<img src>`. Unterordner in `fotos/` sind
@@ -156,6 +174,10 @@ entstehen dann automatisch, CLAUDE.md 7a), `branche`, `ansprache`, `sprachen`,
 - Fehlende Rechtsdaten als **klar markierte Platzhalter** (`PLATZHALTER: UID`) – das
   Prüf-Tor blockt sie beim Umschalten auf `live`.
 
+**Als LETZTER Schritt dieser Etappe:** `package.json → name` auf `kanbuk-<kunde>`
+setzen. Das schaltet das Prüf-Tor scharf – ab jetzt sind Referenz-Reste in der
+Config ein echter Fehler, kein Rauschen.
+
 ---
 
 ## Etappe 4 – Seiten bauen (die eigentliche Arbeit)
@@ -181,24 +203,38 @@ wird dabei ersetzt.
 
 ---
 
-## Etappe 5 – Die Launch-Prüfung (drei Stufen, alle Pflicht)
+## Etappe 5 – Die Launch-Prüfung (vier Stufen, alle Pflicht)
 
-**1. `npm run check` muss grün sein.** Baut selbst und prüft die fertige Seite:
-externe Requests, Meta je Seite, Alt-Texte, feste Breiten, JSON-LD, Bildgewicht,
-Lesbarkeits-Kontrast, Sicherheits-Header, mode-Konsistenz, Referenz-Reste.
+**Vorbedingung:** `package.json → name` ist `kanbuk-<kunde>` – sonst prüft das
+Tor im Template-Modus und Referenz-Reste rutschen durch.
+
+**1. `npm run check` muss grün sein.** Vorprüfung in Sekunden (Pflichtfelder,
+referenzierte Dateien existieren, Binär-Integrität aller Bilder/PDFs), dann Build
+und die volle Prüfung der fertigen Seite: externe Requests, Meta je Seite,
+Alt-Texte, feste Breiten, JSON-LD, Bildgewicht, Lesbarkeits-Kontrast, Header,
+mode-Konsistenz, Referenz-Reste.
 
 **2. `npm run sicht` muss grün sein.** Öffnet jede Seite im echten Browser bei
-350/768/1440 px, macht Screenshots nach `pruefung/` und misst: horizontaler
-Überlauf (nennt die schuldigen Elemente), JS-Fehler in der Konsole, kaputte
-Bilder/Ressourcen. (Erster Lauf auf einem Rechner lädt einmalig den Prüf-Browser.)
+350/768/1440 px und misst: horizontaler Überlauf (nennt die schuldigen Elemente),
+JS-Fehler, kaputte Ressourcen. Erzeugt dabei nach `pruefung/`: die Screenshots,
+die **Screen-Bögen** (alle Breiten einer Seite nebeneinander) und den **Text-Dump
+`texte.md`** (aller sichtbarer Text inkl. zugeklappter Tabs/Akkordeons, plus Titel
+und Descriptions). (Erster Lauf auf einem Rechner lädt einmalig den Prüf-Browser.)
 
-**3. Die Screenshots ANSEHEN – jede Datei in `pruefung/`, mit Read.** Das Skript
-misst, die Augen urteilen. Prüfe dabei:
-- **Layout:** Überlappungen, abgeschnittene Inhalte, kaputte Abstände, Elemente
-  am falschen Platz, springende Grids zwischen den Breiten
-- **Design-Treue:** entspricht es dem Claude Design (Farben, Schriften, Stimmung)?
-- **Rechtschreibung:** JEDEN sichtbaren Text lesen – österreichisches
-  Standarddeutsch, ß-Schreibung, Ansprache konsistent, keine Tippfehler
+**3. `npm run interaktion` muss grün sein.** Fährt jeden Verhaltens-Baustein der
+Seite real im Browser (Tabs umschalten, Filter klicken, Mobilmenü öffnen/Escape,
+Akkordeon, Lightbox, Slider, Vergleich, Formular-Hinweis im demo-Modus) – bei
+350 px und 1440 px. Was klickbar ist, muss klicken.
+
+**4. Mit eigenen Augen und Verstand prüfen – Arbeitsteilung:**
+- **Text** (Rechtschreibung, ß, österreichisches Deutsch, Ansprache konsistent,
+  Tippfehler): über `pruefung/texte.md` lesen – Text statt Pixel, das prüft auch
+  Inhalte, die Screenshots nie zeigen (zugeklappte Panels).
+- **Layout** (Überlappungen, kaputte Abstände, springende Grids, Design-Treue zum
+  Claude Design): über die **Bögen** (`pruefung/bogen-screens-*.png`) – alle
+  Breiten nebeneinander, 1 Read je Seite statt 3.
+- **Text in Bildern** (Logos, Fotos mit Schrift) und jeder Verdachtsfall aus den
+  Bögen: den betreffenden **Einzel-Screenshot** in voller Größe ansehen.
 - **Vollständigkeit:** fehlt sichtbar etwas (leere Sektionen, Platzhalter-Reste)?
 
 Jeder Fund wird behoben und die betroffene Stufe wiederholt, bis alles sauber

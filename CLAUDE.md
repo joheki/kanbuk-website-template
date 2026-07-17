@@ -36,6 +36,25 @@ Verständnis, darfst du die Detailtiefe anheben – die übrigen Regeln gelten i
 Beim Bauen einer Seite gilt zusätzlich der **Ein-Rutsch-Grundsatz**: ein Prompt, ein
 Design-Link → fertige Seite, ohne Zwischenfragen. Details im `/port`-Skill.
 
+### Motor-Meldung (Pflicht)
+
+Der Motor wird nur besser, wenn jeder Klon seine Funde zurückmeldet. Stößt du beim
+Arbeiten auf eine Schwäche des MOTORS — ein Bug, eine irreführende Doku, ein
+fehlendes Rezept, ein Handgriff, den das Template abnehmen könnte — dann entscheide
+mit einer Frage: **„Würde das bei einem anderen Betrieb genauso auftreten, wenn man
+das Template frisch klont?"**
+
+- **Ja →** Sofort in STAND.md unter der festen Überschrift
+  `## Motor-Meldungen (fürs Master-Template)` eintragen: Was, Datei, warum
+  allgemein — und falls du es im Klon schon behoben hast, den Commit nennen.
+  Zusätzlich bekommt der Abschlussbericht an den Nutzer einen eigenen Block
+  **„🔧 Fürs Master-Template"** mit denselben Punkten.
+- **Nein** (betrifft nur diesen Kunden) → normaler Eintrag unter
+  „Getroffene Entscheidungen", keine Meldung.
+
+Ein Klon bekommt keine Template-Updates — die Meldung ist der einzige Weg, auf dem
+ein Fix ins Template zurückfindet.
+
 ---
 
 ## 1. Was dieses Repo ist
@@ -351,8 +370,10 @@ Immer gleich. Details im `/port`-Skill (`.claude/skills/port/SKILL.md`).
 1. `npm run check` ist **grün** (baut selbst und prüft die fertige Seite).
 2. `npm run dev` läuft fehlerfrei.
 3. `npm run sicht` ist **grün** (echter Browser bei 350/768/1440 px: kein Überlauf,
-   keine JS-Fehler, nichts kaputt) **und die Screenshots in `pruefung/` wurden
-   ANGESEHEN** (Layout, Design-Treue, Rechtschreibung – /port-Skill Etappe 5).
+   keine JS-Fehler, nichts kaputt) **und geprüft wurde mit eigenen Augen**:
+   `pruefung/texte.md` gelesen (Rechtschreibung, Ansprache), die Bögen angesehen
+   (Layout über alle Breiten), Verdachtsfälle im Einzel-Screenshot (Etappe 5).
+3a. `npm run interaktion` ist **grün** – jedes Bedien-Element klickt wirklich.
 4. Lighthouse-Ziel **≥ 95** in allen vier Kategorien.
 5. **STAND.md ist aktuell** (Phase, Lücken, Verlaufszeile dieser Sitzung).
 6. Committen und pushen (ein Kunde = ein Repo/Branch).
@@ -373,6 +394,13 @@ technische Pfade kennen zu müssen.
 - Unterordner sind erlaubt: `bild('hero.jpg')` findet auch `fotos/galerie/hero.jpg`.
 - **Jeder Platzhalter kommt ins Lücken-Inventar.**
 
+**Binärdateien (Bilder, PDFs, Schriften) NIEMALS als Base64 durch den Chat-Kontext
+tragen** — beim Abtippen gehen zuverlässig Bytes verloren, und die Datei sieht
+trotzdem gültig aus (Header heil, Inhalt kaputt). Immer als Datei auf die Platte
+holen und die Integrität prüfen (`npm run holen` macht beides in einem Schritt).
+Im Piloten gingen so zwei Logo-Übertragungen kaputt; ein bei 256 KiB gekapptes PDF
+verriet sich nur durch den fehlenden `%%EOF`-Schluss.
+
 Die Referenzseite bindet bewusst ein Bild ein, damit die Pipeline bei jedem Build
 durchlaufen wird – sonst bliebe ein kaputter Bildpfad still, bis er beim Kunden
 auffällt. Das Prüf-Tor schlägt an, wenn in `fotos/` Bilder liegen, im Build aber
@@ -389,6 +417,11 @@ keines optimiert wurde.
 | `npm run schrift -- --familie "<Name>"` | Google-Schrift lokal einbetten |
 | `npm run karte -- --adresse "…"` | Statisches Kartenbild (statt Maps-Embed) |
 | `npm run og -- --bild fotos/<hero>.jpg` | OG-Vorschaubild aus echtem Foto (beim Port Pflicht) |
+| `npm run sicht` | **Sichtprüfung im echten Browser** – Screenshots + Überlauf-/Fehler-Messung + `pruefung/texte.md` + Bögen |
+| `npm run interaktion` | **Bedien-Prüfung** – fährt jeden Verhaltens-Baustein real (350 + 1440 px) |
+| `npm run bogen -- --fotos` | Kontaktbögen aller Fotos (Sichtpflicht mit 1–2 Reads statt 20) |
+| `npm run holen -- --url <…> --ziel <pfad>` | Download + Integritätsprüfung (nie Base64 durch den Chat!) |
+| `npm run preisliste` | Preislisten-JSON aus dem Design validieren → `daten/preisliste.ts` |
 | `npm run sicht` | **Sichtprüfung im echten Browser** – Screenshots + Überlauf-/Fehler-Messung |
 | `npm run platzhalter -- …` | Textlose Platzhalterbilder + OG + Favicon |
 | `npm run stock -- --thema "…"` | Stock-Platzhalter (braucht `PEXELS_API_KEY`) |

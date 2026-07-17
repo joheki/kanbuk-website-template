@@ -18,7 +18,7 @@
 | **Design-Quelle** | – (Claude-Design-Link hier eintragen) |
 | **Vorschau-URL** | – |
 | **Live-Domain** | – |
-| **Motor-Stand** | 2026.7.16 *(= package.json → version; Stand des Templates beim Klonen)* |
+| **Motor-Stand** | 2026.7.17 *(= package.json → version; Stand des Templates beim Klonen)* |
 
 Phasen: `Vorlage → Portiert (Vorschau) → Beim Kunden vorgestellt → Gebucht → Live`
 
@@ -33,6 +33,15 @@ Phasen: `Vorlage → Portiert (Vorschau) → Beim Kunden vorgestellt → Gebucht
 <!-- Improvisationen und Abweichungen vom Design, mit kurzer Begründung. -->
 
 - *(wird beim Port gefüllt)*
+
+## Motor-Meldungen (fürs Master-Template)
+
+<!-- PFLICHT bei Motor-Schwächen (Bug, irreführende Doku, fehlendes Rezept), die
+     JEDEN frischen Klon beträfen: Was, Datei, warum allgemein, ggf. Fix-Commit.
+     Details: CLAUDE.md Abschnitt 0 → „Motor-Meldung". Der Inhaber trägt diese
+     Punkte ins Master-Template zurück – NICHT selbst am Template arbeiten. -->
+
+- *(keine)*
 
 ## Verlauf
 

@@ -45,7 +45,7 @@ export function tabsStarten(): void {
       }
     });
 
-    function zeige(id: string, fokus = false) {
+    function zeige(id: string, fokus = false, durchKlick = false) {
       knoepfe.forEach((k) => {
         const aktiv = k.dataset.tab === id;
         k.setAttribute('aria-selected', String(aktiv));
@@ -61,10 +61,31 @@ export function tabsStarten(): void {
       if (box.hasAttribute('data-tabs-url')) {
         history.replaceState(null, '', `#${id}`);
       }
+
+      /* data-tabs-anker: nach dem Umschalten zurück an den Anfang der Tabs.
+         WARUM: Panels sind unterschiedlich hoch (eine Speisekarten-Kategorie hat
+         24 Positionen, die nächste 3). Schaltet man weiter unten um, wird die
+         Seite plötzlich kürzer – der Browser rückt den Blick nach und man landet
+         unvermittelt mitten im neuen Panel. Das fühlt sich an, als springe die
+         Seite. Nur nötig, wenn die Tab-Leiste schon nach oben gescrollt ist
+         (Rect.top < 0) – steht sie noch sichtbar da, bleibt alles, wo es ist.
+         Den Abstand zu einer klebenden Kopfleiste regelt das Design per
+         `scroll-margin-top`; die Mechanik hier kennt keine Höhen.
+
+         WICHTIG: behavior 'instant', nicht das CSS-Standardverhalten. Der Motor
+         setzt global `scroll-behavior: smooth` – damit würde der Rücksprung als
+         sichtbarer Gleitflug über die halbe Seite abgespielt, und genau das
+         wirkt wie „die Seite springt beim ersten Klick" (Nutzer-Befund im
+         Piloten; beim zweiten Klick steht man schon oben, darum trat es nur
+         einmal auf). Ein sofortiger Wechsel liest sich dagegen als neue
+         Ansicht, wie bei einem Seitenwechsel. */
+      if (durchKlick && box.hasAttribute('data-tabs-anker') && box.getBoundingClientRect().top < 0) {
+        box.scrollIntoView({ block: 'start', behavior: 'instant' as ScrollBehavior });
+      }
     }
 
     knoepfe.forEach((k) => {
-      k.addEventListener('click', () => zeige(k.dataset.tab!));
+      k.addEventListener('click', () => zeige(k.dataset.tab!, false, true));
       k.addEventListener('keydown', (e) => {
         const i = knoepfe.indexOf(k);
         let ziel = -1;
@@ -74,7 +95,7 @@ export function tabsStarten(): void {
         else if (e.key === 'End') ziel = knoepfe.length - 1;
         if (ziel >= 0) {
           e.preventDefault();
-          zeige(knoepfe[ziel].dataset.tab!, true);
+          zeige(knoepfe[ziel].dataset.tab!, true, true);
         }
       });
     });

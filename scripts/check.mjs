@@ -267,8 +267,16 @@ for (const f of htmlDateien) {
   // Viewport – ohne den ist keine Responsiveness möglich
   if (!/<meta[^>]+name=["']viewport["']/i.test(html)) fehler(`${name}: <meta name="viewport"> fehlt`);
 
-  // Alt-Texte
-  for (const m of html.matchAll(/<img\b(?![^>]*\balt=)[^>]*>/gi)) {
+  // Alt-Texte.
+  // Zwei zulässige Schreibweisen: alt="Beschreibung" für Bilder, die etwas
+  // aussagen – und ein LEERES alt für rein schmückende Bilder (Hintergrund,
+  // Foto neben der eigenen Beschriftung). Ein leeres alt ist kein Versäumnis,
+  // sondern die Ansage an den Screenreader „hier gibt es nichts vorzulesen";
+  // Bildbeschreibungen zu erfinden wäre dort schlechter als Schweigen.
+  // Astro schreibt ein leeres alt als blosses `alt` (gültiges HTML) – deshalb
+  // zählt hier `alt=…` UND `alt` allein. Das führende \s verhindert, dass
+  // `data-alt="…"` als Treffer durchgeht.
+  for (const m of html.matchAll(/<img\b(?![^>]*\salt(?:=|[\s>]))[^>]*>/gi)) {
     fehler(`${name}: <img> ohne alt-Attribut -> ${m[0].slice(0, 70)}`);
   }
 }

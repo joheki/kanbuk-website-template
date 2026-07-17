@@ -22,10 +22,11 @@
  *  Rot = die Seite darf so nicht raus.
  * =============================================================================
  */
-import { createServer } from 'node:http';
-import { readFileSync, readdirSync, statSync, existsSync, mkdirSync, rmSync } from 'node:fs';
-import { join, extname, relative } from 'node:path';
+import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { chromium } from 'playwright';
+import { starteDistServer } from './lib/dist-server.mjs';
 
 const WURZEL = process.cwd();
 const DIST = join(WURZEL, 'dist');
@@ -43,46 +44,17 @@ if (!existsSync(DIST)) {
   process.exit(1);
 }
 
-// --- Seiten einsammeln -------------------------------------------------------
-function alleDateien(dir, treffer = []) {
-  for (const e of readdirSync(dir)) {
-    const p = join(dir, e);
-    if (statSync(p).isDirectory()) alleDateien(p, treffer);
-    else treffer.push(p);
-  }
-  return treffer;
-}
-const seiten = alleDateien(DIST)
-  .filter((f) => extname(f) === '.html')
-  .map((f) => '/' + relative(DIST, f).replace(/\\/g, '/').replace(/index\.html$/, '').replace(/\.html$/, ''));
-
-// --- Mini-Webserver für dist/ (kein Zusatzpaket, zufälliger freier Port) -----
-const MIME = {
-  '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript',
-  '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png',
-  '.webp': 'image/webp', '.avif': 'image/avif', '.svg': 'image/svg+xml',
-  '.woff2': 'font/woff2', '.ico': 'image/x-icon', '.txt': 'text/plain', '.xml': 'application/xml',
-};
-const server = createServer((req, res) => {
-  let pfad = decodeURIComponent(new URL(req.url, 'http://x').pathname);
-  let datei = join(DIST, pfad);
-  if (existsSync(datei) && statSync(datei).isDirectory()) datei = join(datei, 'index.html');
-  if (!existsSync(datei)) datei = `${join(DIST, pfad)}.html`;
-  if (!existsSync(datei)) {
-    res.writeHead(404).end('nicht gefunden');
-    return;
-  }
-  res.writeHead(200, { 'Content-Type': MIME[extname(datei).toLowerCase()] ?? 'application/octet-stream' });
-  res.end(readFileSync(datei));
-});
-await new Promise((ok) => server.listen(0, '127.0.0.1', ok));
-const BASIS = `http://127.0.0.1:${server.address().port}`;
+// --- Server + Seitenliste aus der geteilten Bibliothek (nutzt auch interaktion.mjs)
+const { basis: BASIS, seiten, stop } = await starteDistServer(DIST);
 
 // --- Prüfung ------------------------------------------------------------------
 rmSync(ZIEL, { recursive: true, force: true });
 mkdirSync(ZIEL, { recursive: true });
 
 const probleme = [];
+const hinweise = [];
+const texte = [];
+const groessteBreite = Math.max(...BREITEN);
 const browser = await chromium.launch();
 console.log(`Sichtprüfung: ${seiten.length} Seite(n) × ${BREITEN.length} Breiten (${BREITEN.join(', ')} px)\n`);
 
@@ -106,6 +78,26 @@ for (const seite of seiten) {
     await page.evaluate(() => {
       document.querySelectorAll('[data-reveal]').forEach((el) => el.classList.add('ist-sichtbar'));
     });
+
+    // Lazy-Bilder erzwingen. Ein Ganzseiten-Screenshot fotografiert die ganze
+    // Seite, SCROLLT aber nicht – Bilder mit loading="lazy" weit unterhalb des
+    // Sichtfensters laden deshalb nie und wären im Screenshot leere Flächen.
+    // Wer den Screenshot beurteilt, sähe dort einen Fehler, den es gar nicht
+    // gibt (bzw. übersähe einen echten). Deshalb: alles laden und abwarten.
+    await page.evaluate(async () => {
+      document.querySelectorAll('img[loading="lazy"]').forEach((img) => {
+        img.loading = 'eager';
+      });
+      await Promise.all(
+        [...document.images]
+          .filter((img) => !img.complete)
+          .map((img) => new Promise((fertig) => {
+            img.addEventListener('load', fertig, { once: true });
+            img.addEventListener('error', fertig, { once: true });
+          })),
+      );
+    });
+
     await page.waitForTimeout(400); // Übergänge zur Ruhe kommen lassen
 
     // 1) Horizontaler Überlauf – DER Responsive-Killer.
@@ -128,6 +120,27 @@ for (const seite of seiten) {
     const name = `${(seite === '/' ? 'start' : seite.replace(/^\//, '').replace(/\//g, '-'))}-${breite}px.png`;
     await page.screenshot({ path: join(ZIEL, name), fullPage: true });
 
+    // 2b) Text-Dump – NACH dem Screenshot (der zeigt den echten Zustand) und
+    // nur bei der größten Breite: bei 350 px steckt die Navigation im Burger
+    // und fehlt im innerText. Zugeklappte Tabs/Akkordeons werden aufgedeckt –
+    // der Dump prüft damit auch Text, den Screenshots nie zeigen. Die Prüfung
+    // von Rechtschreibung/ß/Ansprache läuft über pruefung/texte.md (Text statt
+    // Pixel); Text IN Bildern (Logos) bleibt Screenshot-Sache.
+    if (breite === groessteBreite) {
+      const dump = await page.evaluate(() => {
+        document.querySelectorAll('[data-tabpanel]').forEach((p) => { p.hidden = false; });
+        document.querySelectorAll('details').forEach((d) => { d.open = true; });
+        return {
+          titel: document.title,
+          beschreibung: document.querySelector('meta[name="description"]')?.getAttribute('content') ?? '',
+          text: document.body.innerText,
+        };
+      });
+      texte.push({ seite, ...dump });
+      const laenge = dump.text.trim().length;
+      if (laenge < 80) hinweise.push(`${seite}: verdächtig wenig sichtbarer Text (${laenge} Zeichen) – leere Seite?`);
+    }
+
     const kennung = `${seite} @ ${breite}px`;
     if (ueberlauf) {
       probleme.push(
@@ -143,9 +156,36 @@ for (const seite of seiten) {
 }
 
 await browser.close();
-server.close();
+stop();
+
+// --- pruefung/texte.md schreiben: aller sichtbarer Text als lesbarer Dump ---
+const md = texte
+  .map(
+    (t) =>
+      `## ${t.seite}\n\n**Titel:** ${t.titel}\n**Description:** ${t.beschreibung}\n\n\`\`\`\n${t.text.trim()}\n\`\`\`\n`,
+  )
+  .join('\n');
+writeFileSync(
+  join(ZIEL, 'texte.md'),
+  `# Sichtbarer Text aller Seiten (bei ${groessteBreite} px, inkl. aufgedeckter Tabs/Akkordeons)\n\n` +
+    `> Hierüber läuft die Text-Prüfung: Rechtschreibung, ß-Schreibung, österreichisches\n` +
+    `> Standarddeutsch, konsistente Ansprache. Text in Bildern zeigt nur der Screenshot.\n\n${md}`,
+  'utf-8',
+);
+
+// --- Screen-Bögen für die Layout-Triage – bewusst non-fatal: ein Bogen-Fehler
+//     darf eine grüne Sichtprüfung nicht kippen (Einzel-Screenshots reichen dann).
+if (existsSync(join(WURZEL, 'scripts', 'bogen.mjs'))) {
+  const bogen = spawnSync(process.execPath, ['scripts/bogen.mjs', '--screens'], { stdio: 'inherit' });
+  if (bogen.status !== 0) console.warn('⚠ Screen-Bögen fehlgeschlagen – bitte die Einzel-Screenshots ansehen.');
+}
 
 console.log('');
+if (hinweise.length > 0) {
+  console.log('⚠ Hinweise:');
+  for (const h of hinweise) console.log(`  • ${h}`);
+  console.log('');
+}
 if (probleme.length > 0) {
   console.log('✗ Sichtprüfung NICHT bestanden:\n');
   for (const p of probleme) console.log(`  • ${p}`);
@@ -154,6 +194,7 @@ if (probleme.length > 0) {
 }
 console.log(`✓ Messbare Prüfung bestanden (kein Überlauf, keine JS-Fehler, nichts kaputt).
 
-  JETZT PFLICHT: die Screenshots in pruefung/ ANSEHEN und visuell beurteilen –
-  Layout-Brüche, Überlappungen, Design-Fehler, Rechtschreibung der sichtbaren
-  Texte. Das Skript misst, die Augen urteilen.`);
+  JETZT PFLICHT (das Skript misst, die Augen urteilen):
+  1. pruefung/texte.md LESEN  → Rechtschreibung, ß, Ansprache, Ö-Deutsch
+  2. pruefung/bogen-screens-* ANSEHEN → Layout über alle Breiten (Triage)
+  3. Verdachtsfälle + Text-in-Bildern → Einzel-Screenshot in voller Größe`);

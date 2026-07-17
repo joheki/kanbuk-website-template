@@ -14,6 +14,8 @@
  */
 import '../styles/fonts.css';
 import '../styles/global.css';
+// Rohtext der Schriften-Deklarationen – fürs Vorladen unten ausgewertet.
+import fontsCssRoh from '../styles/fonts.css?raw';
 import { site, jsonLdTyp } from '../../content.config';
 import { cssVariablen } from '../lib/theme';
 import DemoBar from '../components/DemoBar.astro';
@@ -66,6 +68,34 @@ const oeffnungszeitenLd = site.betrieb.oeffnungszeiten
     closes: o.bisISO,
   }));
 
+/**
+ * Schriften vorladen – gegen das „Text hüpft kurz"-Problem (FOUT).
+ *
+ * fonts.css nutzt font-display: swap (richtig – Text darf nie unsichtbar
+ * sein). Aber: Der Browser entdeckt Schriftdateien erst spät (CSS parsen →
+ * Text ansehen → Datei anfordern). In dieser Lücke rendert die Ersatzschrift,
+ * dann springt der Text auf die echte Schrift um. Mit rel="preload" starten
+ * die Downloads sofort mit dem HTML – die Schrift ist praktisch immer vor dem
+ * ersten Bild da.
+ *
+ * Vorgeladen werden NUR die Latin-Teilsätze (unicode-range U+0000-00FF …) –
+ * die tragen den gesamten deutschen Text. Kyrillisch/Latin-Ext bleiben lazy;
+ * sie vorzuladen wäre verschwendetes Datenvolumen und der Browser warnt über
+ * ungenutzte Preloads. Fehlt einer Deklaration die unicode-range, wird sie
+ * sicherheitshalber vorgeladen. Läuft zur BAUZEIT über fonts.css – funktioniert
+ * damit für jede per `npm run schrift` eingebettete Schrift, kundenneutral.
+ */
+const schriftenVorladen = (() => {
+  const urls = new Set<string>();
+  for (const block of fontsCssRoh.match(/@font-face\s*{[^}]*}/g) ?? []) {
+    const url = block.match(/url\('([^']+\.woff2)'\)/)?.[1];
+    if (!url) continue;
+    const range = block.match(/unicode-range:\s*([^;]+);/)?.[1];
+    if (!range || /U\+0000-00FF/i.test(range)) urls.add(url);
+  }
+  return [...urls];
+})();
+
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': jsonLdTyp(site.branche),
@@ -91,13 +121,20 @@ const jsonLd = {
 ---
 
 <!doctype html>
-<html lang="de-AT">
+<html lang="de-AT" data-animation={site.design.animation ?? 'dezent'}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{vollerTitel}</title>
     <meta name="description" content={desc} />
     <link rel="canonical" href={canonical} />
+
+    {/* Schriften sofort laden, nicht erst nach dem CSS-Parsen – sonst hüpft
+        der Text von der Ersatzschrift auf die echte (Begründung oben).
+        crossorigin ist bei Font-Preloads Pflicht, auch same-origin. */}
+    {schriftenVorladen.map((href) => (
+      <link rel="preload" href={href} as="font" type="font/woff2" crossorigin />
+    ))}
 
     {/* demo = Vorschau: nie indexieren. Die 404 ist AUCH live nie indexierbar.
         Der HTTP-Header kommt im demo-Modus zusätzlich. */}

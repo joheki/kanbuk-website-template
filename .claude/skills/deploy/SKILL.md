@@ -12,22 +12,29 @@ argument-hint: ""
 Zuerst klären, welcher Fall vorliegt (kurz nachfragen, wenn unklar):
 **A) Demo-Vorschau** für einen Lead, oder **B) gebuchter Kunde geht live**.
 
-Vercel-Zugang vorab prüfen: `npx vercel whoami` – falls nicht eingeloggt, den
-Nutzer durch `npx vercel login` führen (Firmen- bzw. eigenes Konto).
+**Vercel-Realität (im Piloten gelernt, alle drei Punkte prüfen):**
+- Zugang: `npx vercel whoami` – falls nicht eingeloggt, den Nutzer durch
+  `npx vercel login` führen (Firmen- bzw. eigenes Konto).
+- **Plan:** Der Hobby-Plan verbietet JEDE kommerzielle Nutzung – und jedes
+  Kundenprojekt ist per Vercel-Definition kommerziell („receiving payment to
+  create the site"). Vor dem ersten Deploy sicherstellen, dass das Ziel-Team
+  auf **Pro** läuft; sonst den Nutzer darauf hinweisen, bevor irgendetwas
+  hochgeht.
+- **Team bewusst wählen:** beim Erstanlegen NICHT blind `--yes` – das Projekt
+  landet sonst in dem Team, das die CLI zufällig gewählt hat. Vorher
+  `npx vercel switch` (bzw. `--scope <team>`).
 
-Vor JEDEM Deploy (Demo wie Live) läuft die **komplette Launch-Prüfung**:
-1. `npm run check` grün (Technik, SEO, Recht, Sicherheits-Header)
-2. `npm run sicht` grün (echter Browser: Überlauf, JS-Fehler, kaputte Ressourcen)
-3. **Alle Screenshots in `pruefung/` ansehen** (Read) und visuell beurteilen:
-   Layout, Design-Treue, Rechtschreibung, Vollständigkeit – Details im
-   /port-Skill, Etappe 5
-4. Beim Live-Gang zusätzlich: `npm audit --omit=dev` – Funde mit Schweregrad
+Vor JEDEM Deploy (Demo wie Live) läuft die **komplette Launch-Prüfung**
+(Details: /port-Skill, Etappe 5):
+1. `npm run check` grün (Vorprüfung + Build + Prüf-Tor)
+2. `npm run sicht` grün (echter Browser: Überlauf, JS-Fehler, kaputte
+   Ressourcen; erzeugt Screenshots, Bögen und `pruefung/texte.md`)
+3. `npm run interaktion` grün (jeder Bedien-Baustein wird real gefahren)
+4. **Mit eigenen Augen:** `pruefung/texte.md` lesen (Rechtschreibung, Ansprache),
+   Bögen ansehen (Layout über alle Breiten), Verdachtsfälle im Einzel-Screenshot
+5. Beim Live-Gang zusätzlich: `npm run check -- --live` (Platzhalter, offene
+   STAND.md-Punkte, Sitemap) und `npm audit --omit=dev` – Funde mit Schweregrad
    high/critical stoppen den Launch (dem Nutzer melden)
-
-Vorab immer: **`npm run check` muss grün sein** (baut selbst und prüft den Standard –
-externe Requests, Meta je Seite, Alt-Texte, feste Breiten, mode-Konsistenz).
-Beim Live-Gang zusätzlich `npm run check -- --live` (prüft Rechtstexte-Platzhalter
-und Sitemap).
 
 ---
 
@@ -40,6 +47,12 @@ Für Vorschau-Demos wird **kein** GitHub-Repo angelegt – direkt zu Vercel:
    (Framework „Astro" wird erkannt, Output `dist`).
 3. Für die teilbare URL: `npx vercel --prod`.
 4. Die URL an den Nutzer geben. Keine Umgebungsvariablen nötig (Formular ist im Demo aus).
+
+**Welche URL man dem Lead schickt:** Ist im Vercel-Team „Deployment Protection"
+aktiv, ist NUR der kurze Alias öffentlich (`https://<projekt>.vercel.app`) – die
+längeren Deploy-URLs führen Fremde auf eine Vercel-Anmeldemaske. Deshalb immer
+den kurzen Alias herausgeben und **einmal selbst im privaten Fenster öffnen**,
+bevor er verschickt wird.
 
 ---
 

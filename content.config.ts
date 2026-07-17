@@ -88,11 +88,24 @@ export interface DesignSchriften {
   [name: string]: string;
 }
 
+/**
+ * Wie sich die Seite beim Scrollen anfühlt. Variiert NUR die bestehende
+ * Einblende-Animation (Dauer, Distanz, Kurve) – kein zusätzliches JS,
+ * „Bewegung reduzieren" des Besuchers gewinnt immer.
+ *   aus      – keine Einblendungen
+ *   dezent   – kaum merklich (Standard)
+ *   lebendig – schneller, spürbarer Schwung (Studio, Bar)
+ *   elegant  – langsamer, weicher (Beauty, Fine Dining)
+ */
+export type AnimationsPreset = 'aus' | 'dezent' | 'lebendig' | 'elegant';
+
 export interface Design {
   farben: DesignFarben;
   schriften: DesignSchriften;
   /** z. B. '0px', '8px' – aus dem Design übernommen. */
   radius?: string;
+  /** Siehe AnimationsPreset. Weglassen = 'dezent'. */
+  animation?: AnimationsPreset;
 }
 
 // ---------------------------------------------------------------------------
@@ -114,7 +127,10 @@ export interface Seite {
   metaBeschreibung: string;
   /** In der Hauptnavigation zeigen? Default: true. */
   inNavigation?: boolean;
-  /** Eigenes OG-Bild (Dateiname in fotos/). Sonst das globale. */
+  /** Eigenes OG-Bild für DIESE Seite – Dateiname in **public/** (nicht fotos/!),
+      z. B. 'og-speisekarte.jpg'. Erzeugen mit:
+      npm run og -- --bild fotos/<foto>.jpg --ziel public/og-<seite>.jpg
+      Weglassen = globales OG-Bild (public/og.jpg). */
   ogBild?: string;
 }
 
