@@ -195,6 +195,8 @@ wird dabei ersetzt.
   Zweispalter → einspaltig, Vierer-Grid → zwei → eins, Bild neben Text → Bild über Text.
 - Verhalten über die Bausteine anschließen (`data-tabs`, `data-slider`, …).
 - Formulare über `<Formular id="…" />` – nie von Hand nachbauen.
+- Social-Media-Icons über `<SocialLinks />` (Daten in `betrieb.socialLinks`) –
+  keine Icon-Dateien erfinden, keine Icons aus dem Design-Export kopieren.
 - **Zweisprachiges Design?** Entweder die englischen Seiten als ECHTE Routen bauen
   (`src/pages/en/…`, dann `sprachen: ['de','en']`) – oder für die Demo bei
   `sprachen: ['de']` bleiben und die zweite Sprache in STAND.md als offenen Punkt

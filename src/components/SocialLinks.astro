@@ -1,0 +1,104 @@
+---
+/**
+ * SocialLinks – MOTOR-Baustein: die Social-Media-Verweise des Betriebs.
+ *
+ * Liest content.config.ts -> betrieb.socialLinks und rendert je Eintrag ein
+ * neutrales Linien-Icon als Link (neuer Tab, ohne Referrer-Leck, mit
+ * Screenreader-Beschriftung). Die Icons erben Farbe (currentColor) und
+ * skalieren mit der Schriftgröße – Größe, Farbe und Abstand bestimmt das
+ * Design über die umgebende Stelle (Kopf- oder Fußzeile).
+ *
+ * Verwendung:   <SocialLinks />          (typisch in der Fußzeile)
+ *               <SocialLinks class="…" />
+ *
+ * Kein Eintrag in der Config -> es wird NICHTS gerendert.
+ * Die Links sind auch im demo-Modus klickbar: Sie führen nur beim bewussten
+ * Klick nach draußen (wie der Google-Maps-Link) und laden vorher nichts.
+ */
+import { site } from '../../content.config';
+
+interface Props {
+  class?: string;
+}
+const { class: klasse } = Astro.props;
+
+const links = site.betrieb.socialLinks;
+
+const LABEL: Record<string, string> = {
+  instagram: 'Instagram',
+  facebook: 'Facebook',
+  tiktok: 'TikTok',
+  youtube: 'YouTube',
+  linkedin: 'LinkedIn',
+  whatsapp: 'WhatsApp',
+  website: 'Website',
+};
+
+/* Neutrale Linien-Icons (24er-Raster, currentColor). Bewusst KEINE
+   Marken-Originallogos, sondern schlichte, erkennbare Zeichen – das Design
+   darf sie färben/rahmen, ohne Marken-Styleguides zu verletzen. */
+const ICON: Record<string, string> = {
+  instagram:
+    '<rect x="3.5" y="3.5" width="17" height="17" rx="4.5"/><circle cx="12" cy="12" r="3.8"/><circle cx="17.1" cy="6.9" r="0.6" fill="currentColor" stroke="none"/>',
+  facebook:
+    '<path d="M14.8 4.5h-2.1c-1.9 0-3.2 1.3-3.2 3.3v2.7H7.2v3h2.3v7h3.1v-7h2.5l.5-3h-3V8.1c0-.6.3-.9.9-.9h2.3z" fill="currentColor" stroke="none"/>',
+  tiktok:
+    '<path d="M14.5 4c.4 1.8 1.6 3.1 3.5 3.4v2.6c-1.3 0-2.5-.4-3.5-1.1v5.6a4.9 4.9 0 1 1-4.2-4.8v2.7a2.2 2.2 0 1 0 1.5 2.1V4z" fill="currentColor" stroke="none"/>',
+  youtube:
+    '<rect x="3.5" y="6.5" width="17" height="12" rx="3"/><path d="M10.5 9.8l4.5 2.7-4.5 2.7z" fill="currentColor" stroke="none"/>',
+  linkedin:
+    '<rect x="3.5" y="3.5" width="17" height="17" rx="2.5"/><circle cx="8" cy="8.2" r="1.2" fill="currentColor" stroke="none"/><path d="M6.9 10.5h2.2V17H6.9z" fill="currentColor" stroke="none"/><path d="M11 10.5h2.1v.9c.4-.6 1.1-1.1 2.2-1.1 1.7 0 2.8 1.1 2.8 3.2V17h-2.2v-3.2c0-1-.4-1.6-1.3-1.6-.9 0-1.4.6-1.4 1.6V17H11z" fill="currentColor" stroke="none"/>',
+  whatsapp:
+    '<path d="M12 3.8a8 8 0 0 0-6.9 12l-1 3.7 3.8-1A8 8 0 1 0 12 3.8z"/><path d="M9.3 8.6c.3-.6 1-.7 1.4-.2l.7 1c.3.4.2.9-.1 1.3l-.4.4c.5 1 1.4 1.9 2.4 2.4l.4-.4c.4-.3.9-.4 1.3-.1l1 .7c.5.4.4 1.1-.2 1.4-1 .6-2.3.4-3.6-.4a10 10 0 0 1-2.8-2.8c-.8-1.3-1-2.6-.1-3.3z" fill="currentColor" stroke="none"/>',
+  website:
+    '<circle cx="12" cy="12" r="8.5"/><ellipse cx="12" cy="12" rx="3.8" ry="8.5"/><path d="M3.5 12h17"/>',
+};
+---
+
+{links.length > 0 && (
+  <ul class:list={['social-links', klasse]}>
+    {links.map((l) => (
+      <li>
+        <a
+          class="social-links__link"
+          href={l.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={`${site.betrieb.name} auf ${LABEL[l.plattform] ?? l.plattform}`}
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+            set:html={ICON[l.plattform] ?? ICON.website}
+          />
+        </a>
+      </li>
+    ))}
+  </ul>
+)}
+
+<style>
+  /* Nur Mechanik-Minimum – Farbe, Größe und Abstände bestimmt das Design
+     (Icons erben currentColor und skalieren über font-size der Umgebung). */
+  .social-links {
+    display: flex;
+    gap: 0.75em;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .social-links__link {
+    display: block;
+    color: inherit;
+    line-height: 0;
+  }
+  .social-links__link svg {
+    width: 1.5em;
+    height: 1.5em;
+  }
+</style>

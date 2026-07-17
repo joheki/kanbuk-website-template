@@ -221,6 +221,7 @@ bauen – anschließen und im Design anmalen.
 | **Mobilmenü** | `data-menue-schalter` + `data-menue` | Navigation |
 | **Vergleich** | `data-vergleich` | Vorher/Nachher |
 | **Formular** | `<Formular id="…" />` | Kontakt, Reservierung, Termin |
+| **Social-Icons** | `<SocialLinks />` (liest `betrieb.socialLinks`) | Fußzeile, Kontaktseite |
 | **Einwilligung** | automatisch, wenn `dienste` gefüllt | Pixel/Tracking (Abschnitt 7a) |
 | **Einbettung** | `<Einbettung url=… />` | Maps/YouTube per 2-Klick (Abschnitt 7a) |
 

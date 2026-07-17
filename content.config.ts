@@ -468,7 +468,11 @@ const konfig = {
       { tag: 'Samstag', zeit: '09:00–13:00', tageISO: ['Sa'], vonISO: '09:00', bisISO: '13:00' },
       { tag: 'Sonntag', zeit: 'geschlossen' },
     ],
-    socialLinks: [],
+    socialLinks: [
+      { plattform: 'instagram', url: 'https://www.instagram.com/musterbetrieb' },
+      { plattform: 'facebook', url: 'https://www.facebook.com/musterbetrieb' },
+      { plattform: 'whatsapp', url: 'https://wa.me/4310000000' },
+    ],
   },
 
   // Design-Tokens: beim Kunden aus dem Claude Design übernehmen.
