@@ -387,17 +387,23 @@ if (deployen) {
   const r = spawnSync('npx vercel --prod --yes', { cwd: ziel, stdio: 'inherit', shell: true });
   if ((r.status ?? 1) !== 0) process.exit(r.status ?? 1);
 
-  // Marken-Adresse draufsetzen. Zwei Versuche: die allererste Zertifikats-
-  // Ausstellung je Unterdomain braucht manchmal ein paar Sekunden.
+  // Marken-Adresse als PROJEKT-Domain anbinden – nicht per "alias set": ein
+  // Alias zählt beim aktiven Vercel-Zugriffsschutz als geschützte Adresse
+  // (Besucher sähen einen Login!). Eine Projekt-Domain ist öffentlich und
+  // hängt auch bei künftigen Uploads automatisch am neuesten Stand.
   const markenAdresse = `demo-${slug}.${MARKEN_DOMAIN}`;
   const kurzAdresse = `${basename(ziel)}.vercel.app`;
+  spawnSync(`npx vercel domains add ${markenAdresse} ${basename(ziel)}`, {
+    cwd: ziel, shell: true, encoding: 'utf-8',
+  });
+  // Ehrlicher Beweis statt Befehls-Status: erst wenn die Adresse öffentlich
+  // mit 200 antwortet (kein Login-Umweg, kein Zertifikatsfehler), gilt es.
   let geklappt = false;
-  for (let versuch = 1; versuch <= 2 && !geklappt; versuch++) {
-    if (versuch > 1) Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 8000);
-    const a = spawnSync(`npx vercel alias set https://${kurzAdresse} ${markenAdresse}`, {
-      cwd: ziel, shell: true, encoding: 'utf-8',
-    });
-    geklappt = a.status === 0;
+  for (let versuch = 1; versuch <= 3 && !geklappt; versuch++) {
+    await new Promise((r) => setTimeout(r, versuch === 1 ? 5000 : 10000));
+    try {
+      geklappt = (await fetch(`https://${markenAdresse}`, { redirect: 'manual' })).status === 200;
+    } catch { /* DNS/Zertifikat noch nicht so weit – nächster Versuch */ }
   }
   if (geklappt) {
     console.log(`
@@ -415,7 +421,7 @@ if (deployen) {
   console.log(`Hochladen (im Demo-Ordner, erster Lauf fragt ggf. nach dem Vercel-Team):
     cd "${ziel}"
     npx vercel --prod
-    npx vercel alias set https://${basename(ziel)}.vercel.app demo-${slug}.${MARKEN_DOMAIN}
+    npx vercel domains add demo-${slug}.${MARKEN_DOMAIN} ${basename(ziel)}
 
   Dem Lead den Marken-Link schicken (https://demo-${slug}.${MARKEN_DOMAIN}) und
   vorher einmal selbst im privaten Fenster öffnen.`);

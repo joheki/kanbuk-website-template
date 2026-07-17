@@ -268,7 +268,9 @@ die fertige Seite – mit gezogenem Stecker.
 **Adress-Stufen (Kanbuk-Konvention):** Verkaufs-Demo auf
 `demo-<kunde>.kanbuk.com` (setzt `npm run demo` automatisch) → Abnahme-Vorschau
 des gebauten Klons auf `<kunde>.kanbuk.com`
-(`npx vercel alias set <projekt>.vercel.app <kunde>.kanbuk.com`) → live auf der
+(`npx vercel domains add <kunde>.kanbuk.com <projekt>` – als **Projekt-Domain**,
+nie per `alias set`: ein Alias landet hinter dem Vercel-Zugriffsschutz) → live
+auf der
 **eigenen Domain des Kunden**. Die kanbuk.com-Unterdomains sind Vorschau-Stufen,
 nie die endgültige Adresse.
 
