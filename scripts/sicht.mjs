@@ -117,6 +117,26 @@ for (const seite of seiten) {
       return { breite: doc.scrollWidth, sichtbar: doc.clientWidth, schuldige };
     });
 
+    // 1b) Matsch-Bilder: ein Bild, das breiter angezeigt wird, als seine
+    // Datei Pixel hat, wird vom Browser hochgerechnet und sieht verpixelt
+    // aus. Klassische Ursache: <Image widths={[…1000]}> unter einem
+    // Vollbreiten-Band. Fällt sonst erst dem Kunden am großen Monitor auf.
+    const matschig = await page.evaluate(() => {
+      return [...document.images]
+        .filter((b) => b.complete && b.naturalWidth > 0 && !b.currentSrc.startsWith('data:'))
+        .filter((b) => !/\.svg(\?|$)/i.test(b.currentSrc)) // Vektor skaliert verlustfrei
+        .filter((b) => {
+          const r = b.getBoundingClientRect();
+          return r.width > 60 && r.width > b.naturalWidth * 1.34;
+        })
+        .slice(0, 4)
+        .map((b) => {
+          const r = b.getBoundingClientRect();
+          const datei = (b.currentSrc.split('/').pop() || '').split('?')[0].slice(0, 44);
+          return `${datei}: nur ${b.naturalWidth}px Datei auf ${Math.round(r.width)}px Anzeige`;
+        });
+    });
+
     const name = `${(seite === '/' ? 'start' : seite.replace(/^\//, '').replace(/\//g, '-'))}-${breite}px.png`;
     await page.screenshot({ path: join(ZIEL, name), fullPage: true });
 
@@ -149,8 +169,9 @@ for (const seite of seiten) {
     }
     for (const f of [...new Set(jsFehler)]) probleme.push(`${kennung}: JS-Fehler -> ${f.slice(0, 140)}`);
     for (const k of [...new Set(kaputt)]) probleme.push(`${kennung}: lädt nicht -> ${k.slice(0, 140)}`);
+    for (const m of matschig) probleme.push(`${kennung}: VERPIXELT (hochskaliert) -> ${m}\n      Abhilfe: widths der <Image> bis zur echten Anzeigebreite erweitern.`);
 
-    console.log(`  ${ueberlauf || jsFehler.length || kaputt.length ? '✗' : '✓'} ${kennung}  → pruefung/${name}`);
+    console.log(`  ${ueberlauf || jsFehler.length || kaputt.length || matschig.length ? '✗' : '✓'} ${kennung}  → pruefung/${name}`);
     await kontext.close();
   }
 }
