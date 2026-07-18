@@ -11,6 +11,10 @@
  *
  *      npm run karte -- --adresse "Musterstraße 1, 1010 Wien"
  *      npm run karte -- --adresse "…" --primaer "#c0392b" --zoom 16
+ *      npm run karte -- --adresse "…" --stil dunkel   (dunkle Websites!)
+ *
+ *  Stile: hell (OSM klassisch) · dunkel · dezent (beide CARTO, aufgeräumt,
+ *  ohne Symbol-Wirrwarr, doppelte Auflösung).
  *
  *  Die Karte wird aus OpenStreetMap-Kacheln zusammengesetzt (bewusst KEIN
  *  fertiger Static-Map-Dienst: solche Dienste verschwinden – der Kachel-Server
@@ -43,6 +47,34 @@ const hoehe = Number(wert('hoehe', '800'));
 const primaer = wert('primaer', '#c0392b');
 const hintergrund = wert('hintergrund', '#f4f4f5');
 const datei = wert('datei', 'karte.jpg');
+
+/* Karten-Stil. „hell" = klassisches OSM (detailreich, viele Symbole).
+   „dunkel"/„dezent" = aufgeräumte CARTO-Basiskarten (keine POI-Symbole,
+   ruhige Flächen) – passen zu gestalteten Websites deutlich besser und
+   gibt es in doppelter Auflösung (Retina). Attribution s. unten. */
+const stil = wert('stil', 'hell');
+const STILE = {
+  hell: {
+    kachel: (z, x, y) => `https://tile.openstreetmap.org/${z}/${x}/${y}.png`,
+    faktor: 1,
+    lizenz: 'Kartendaten © OpenStreetMap-Mitwirkende',
+  },
+  dunkel: {
+    kachel: (z, x, y) => `https://basemaps.cartocdn.com/dark_all/${z}/${x}/${y}@2x.png`,
+    faktor: 2,
+    lizenz: 'Kartendaten © OpenStreetMap-Mitwirkende, © CARTO',
+  },
+  dezent: {
+    kachel: (z, x, y) => `https://basemaps.cartocdn.com/light_all/${z}/${x}/${y}@2x.png`,
+    faktor: 2,
+    lizenz: 'Kartendaten © OpenStreetMap-Mitwirkende, © CARTO',
+  },
+};
+if (!STILE[stil]) {
+  console.error(`✗ Unbekannter Stil "${stil}" – erlaubt: ${Object.keys(STILE).join(', ')}`);
+  process.exit(1);
+}
+const { kachel: kachelUrl, faktor, lizenz } = STILE[stil];
 
 if (!adresse) {
   console.error(`
@@ -96,11 +128,21 @@ async function koordinaten(adr) {
   return { lat: Number(treffer[0].lat), lon: Number(treffer[0].lon), name: treffer[0].display_name };
 }
 
-/** Markierung: Ring + Punkt in der Markenfarbe. */
-function nadelSvg() {
-  return Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${breite}" height="${hoehe}">
-    <circle cx="${breite / 2}" cy="${hoehe / 2}" r="34" fill="${primaer}" fill-opacity="0.22"/>
-    <circle cx="${breite / 2}" cy="${hoehe / 2}" r="14" fill="${primaer}" stroke="#ffffff" stroke-width="3"/>
+/** Markierung: echte Standort-Nadel (Tropfenform) in der Markenfarbe,
+    weiß umrandet, mit weichem Schattenpunkt – Spitze exakt am Ort. */
+function nadelSvg(f = 1) {
+  const b = breite * f;
+  const h = hoehe * f;
+  const cx = b / 2;
+  const cy = h / 2;
+  const s = 1.35 * f; // Nadelgröße
+  return Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${b}" height="${h}">
+    <ellipse cx="${cx}" cy="${cy + 3 * s}" rx="${13 * s}" ry="${5 * s}" fill="#000" fill-opacity="0.28"/>
+    <g transform="translate(${cx},${cy}) scale(${s})">
+      <path d="M0 0 C -14 -22, -20 -28, -20 -40 A 20 20 0 1 1 20 -40 C 20 -28, 14 -22, 0 0 Z"
+            fill="${primaer}" stroke="#ffffff" stroke-width="3.4"/>
+      <circle cx="0" cy="-40" r="7.5" fill="#ffffff"/>
+    </g>
   </svg>`);
 }
 
@@ -148,36 +190,44 @@ try {
       // Am Datumsgrenzen-Rand umlaufen; außerhalb Nord/Süd gibt es nichts.
       const kx = ((tx % maxKachel) + maxKachel) % maxKachel;
       if (ty < 0 || ty >= maxKachel) continue;
-      const daten = await hole(`https://tile.openstreetmap.org/${zoom}/${kx}/${ty}.png`);
+      const daten = await hole(kachelUrl(zoom, kx, ty));
       teile.push({
         input: daten,
-        left: Math.round(tx * KACHEL - linksOben.x),
-        top: Math.round(ty * KACHEL - linksOben.y),
+        left: Math.round((tx * KACHEL - linksOben.x) * faktor),
+        top: Math.round((ty * KACHEL - linksOben.y) * faktor),
       });
       // Höflich gegenüber dem freien Kachel-Server bleiben.
       await new Promise((r) => setTimeout(r, 60));
     }
   }
 
+  // Bei Retina-Stilen (faktor 2) entsteht das Bild in doppelter Auflösung –
+  // Astro <Image> rechnet fürs Layout herunter, Bildschirme mit hoher
+  // Pixeldichte bekommen die volle Schärfe.
   await sharp({
-    create: { width: breite, height: hoehe, channels: 3, background: hintergrund },
+    create: { width: breite * faktor, height: hoehe * faktor, channels: 3, background: hintergrund },
   })
-    .composite([...teile, { input: nadelSvg(), blend: 'over' }])
+    .composite([...teile, { input: nadelSvg(faktor), blend: 'over' }])
     .jpeg({ quality: 80, mozjpeg: true })
     .toFile(ziel);
 
   const kb = Math.round(statSync(ziel).size / 1024);
   console.log(`
-✓ ${datei} erzeugt (${breite}×${hoehe}, ${kb} KB)
+✓ ${datei} erzeugt (${breite * faktor}×${hoehe * faktor}, Stil „${stil}", ${kb} KB)
   Liegt in: fotos/${datei}
 
-  Einbinden – als BILD mit Link, NIEMALS als <iframe>:
+  Einbinden – als BILD mit Link, NIEMALS als fester <iframe>:
       <a href={site.betrieb.adresse.googleMapsUrl} target="_blank" rel="noopener noreferrer">
         <Image src={karte} alt="Karte: ${adresse}" />
       </a>
 
-  PFLICHT: „Kartendaten © OpenStreetMap-Mitwirkende" sichtbar neben die Karte
-  setzen (ODbL-Lizenz).
+  Will der Kunde eine BEDIENTE Google-Karte: das Bild als Vorschau in die
+  2-Klick-Einbettung legen –
+      <Einbettung url="https://www.google.com/maps?q=…&output=embed" …>
+        <Image src={karte} alt="…" />
+      </Einbettung>
+
+  PFLICHT: „${lizenz}" sichtbar neben die Karte setzen (ODbL-Lizenz).
 `);
 } catch (e) {
   console.warn(`⚠ Kacheln nicht ladbar (${e.message}) – erzeuge Platzhalter.`);
