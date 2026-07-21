@@ -144,6 +144,28 @@ for (const f of htmlDateien) {
     fehler(`${name}: setzt ein Cookie – die Seite muss cookiefrei bleiben (sonst Banner-Pflicht)`);
   }
 
+  /* PDF-Links müssen halten, was ihr Text verspricht.
+     Ein <a href="…​.pdf"> OHNE download-Attribut lädt nichts herunter – der
+     Browser ÖFFNET das PDF (der Motor liefert es bewusst mit
+     Content-Disposition: inline aus). Steht daneben trotzdem
+     „herunterladen", verspricht die Seite etwas anderes, als sie tut.
+     Für eine Speisekarte ist Öffnen ohnehin der richtige Weg: Niemand will
+     die Karte im Downloads-Ordner sammeln, man will kurz hineinschauen.
+     Soll wirklich heruntergeladen werden (Preisliste zum Aufheben, Formular
+     zum Ausfüllen), gehört download ans <a> – dann passt der Text wieder. */
+  for (const m of html.matchAll(/<a\b([^>]*href=["'][^"']*\.pdf[^"']*["'][^>]*)>([\s\S]{0,600}?)<\/a>/gi)) {
+    const [, attrs, inhalt] = m;
+    const text = inhalt.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    const verspricht = /herunterladen|download|runterladen|speichern/i.test(text);
+    const laedtWirklich = /\bdownload\b/i.test(attrs);
+    if (verspricht && !laedtWirklich) {
+      fehler(
+        `${name}: PDF-Link sagt „${text.slice(0, 44)}", lädt aber nichts herunter – der Browser öffnet die Datei.\n` +
+          `    Text auf „öffnen"/„ansehen" ändern (empfohlen) ODER download ans <a> setzen, wenn es wirklich ein Download sein soll.`,
+      );
+    }
+  }
+
   // Die EU-Streitbeilegungsplattform wurde am 20.07.2025 eingestellt
   // (VO (EU) 2024/3228). Ein Link darauf ist ein toter Pflicht-Link und
   // laut WKO zu entfernen – er darf nie wieder in ein Impressum rutschen.

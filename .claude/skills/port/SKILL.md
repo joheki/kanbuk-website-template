@@ -199,6 +199,14 @@ wird dabei ersetzt.
   keine Icon-Dateien erfinden, keine Icons aus dem Design-Export kopieren.
   Zeigt das Design Icon-Kreise o. Ä., den Baustein per `:global(.social-links…)`
   in diese Optik kleiden – nie Buchstaben („IG") als Icon-Ersatz stehen lassen.
+- **PDFs werden GEÖFFNET, nicht heruntergeladen.** Speisekarte, Preisliste,
+  Kursplan: Der Gast will kurz hineinschauen, nicht eine Datei sammeln. Also
+  `<a href="/karte.pdf" target="_blank" rel="noopener">Karte als PDF öffnen</a>`
+  – **kein** `download`-Attribut, und im Text „öffnen"/„ansehen" statt
+  „herunterladen". Ein `download` gehört nur an Dateien, die man wirklich
+  behalten will (ausfüllbares Formular, Angebot). Das Prüf-Tor meldet jeden
+  PDF-Link, dessen Text etwas anderes verspricht als er tut. Bei großen Dateien
+  die Größe danebenschreiben („PDF, 2 MB") – am Handy zählt das.
 - **Die Fußzeile bekommt `<Signatur />`** (dezenter Kanbuk-Backlink, neben © und
   Rechtslinks). Das ist Geschäftsmodell, keine Deko – das Prüf-Tor blockt bei
   `--live` jede Seite ohne Signatur. Den Ankertext wählt der Baustein selbst
