@@ -278,7 +278,7 @@ Dann der Bericht an den Nutzer, kurz und ehrlich:
 
 Zuerst STAND.md lesen – dort steht, was offen ist. Dann nur noch drei Dinge,
 kein Basteln an Technik:
-1. `mode: 'live'` setzen und neu bauen (`vercel.json`/`_headers` entstehen
+1. `mode: 'live'` setzen und neu bauen (`vercel.json` entsteht
    automatisch richtig – nichts von Hand ändern)
 2. Echte **Rechtstexte** (UID, Firmenbuch – Impressumspflicht) + alle offenen
    Punkte aus STAND.md abarbeiten und abhaken

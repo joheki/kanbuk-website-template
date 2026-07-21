@@ -71,7 +71,7 @@ bekommt ein neuer Mitarbeiter vom Inhaber).
 
 1. **Live-Konfiguration** in `content.config.ts`:
    - `mode: 'live'` setzen (Formular an, `tel:` verlinkt, Indexierung + Sitemap).
-     `vercel.json` und `_headers` erzeugt der nächste Build **automatisch** ohne
+     `vercel.json` erzeugt der nächste Build **automatisch** ohne
      Sperr-Header – dort ist NICHTS von Hand zu ändern.
    - Rechtstexte vollständig und echt (UID/Firmenbuch etc.), echte Bilder eingesetzt,
      alle offenen Punkte in STAND.md abgehakt.
@@ -98,6 +98,8 @@ bekommt ein neuer Mitarbeiter vom Inhaber).
 
 ---
 
-## Cloudflare Pages (Alternative zu Vercel)
-Repo verbinden, Build `npm run build`, Output `dist`. Der `X-Robots-Tag`-Header wird dort
-automatisch über die generierte `_headers`-Datei gesetzt (mode-abhängig, nichts manuell).
+## Nur Vercel
+Der Motor zielt bewusst auf einen einzigen Host. Die frühere Cloudflare-/Netlify-
+Schiene (zweiter Formular-Endpunkt, `_headers`, `_redirects`) ist entfernt – sie
+wurde nie ausgeliefert, musste aber mitgepflegt werden und war dabei still
+kaputt. Bei einem Host-Wechsel aus der Versionsgeschichte zurückholen.

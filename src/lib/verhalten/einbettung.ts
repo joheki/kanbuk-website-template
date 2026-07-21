@@ -42,6 +42,18 @@ export function einbettungStarten(): void {
       rahmen.style.cssText = `width:100%; aspect-ratio:${seitenverhaeltnis}; border:0; display:block;`;
       box.replaceChildren(rahmen);
       box.classList.add('ist-geladen');
+
+      /* Alles, was nur zum PLATZHALTER gehört, verschwindet mit ihm.
+         Typischer Fall: unter dem statischen Kartenbild steht die Pflicht-
+         Lizenzzeile „Kartendaten © OpenStreetMap-Mitwirkende". Sobald der
+         Besucher die echte Google-Karte lädt, ist das Bild weg – die Zeile
+         blieb aber stehen und behauptete etwas Falsches über den nun
+         sichtbaren Inhalt. Elemente dafür mit
+         data-einbettung-nur-platzhalter auszeichnen. */
+      const umfeld = box.closest('section') ?? box.parentElement ?? document.body;
+      umfeld.querySelectorAll<HTMLElement>('[data-einbettung-nur-platzhalter]').forEach((el) => {
+        el.hidden = true;
+      });
     }
 
     // Wurde die Kategorie schon freigegeben, darf direkt geladen werden.

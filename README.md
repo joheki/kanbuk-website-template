@@ -173,7 +173,7 @@ src/
   components/            Motor: DemoBar, Navigation, Formular
                          + die portierten Sektionen des Kunden
   pages/                 eine Datei je Unterseite
-api/ · functions/        Formular-Endpunkt (Vercel bzw. Cloudflare)
+api/                    Formular-Endpunkt (Vercel)
 scripts/                 check, schrift, karte, platzhalter, stock
 vorlagen/                Design-Briefing für Claude Design
 ```
@@ -185,12 +185,15 @@ Standard vorführbar. Beim Kunden wird sie ersetzt.
 
 ## Deploy
 
-**Vercel** (Standard): `npx vercel` für die Vorschau, `npx vercel --prod` für live.
-`vercel.json` und `_headers` erzeugt der Build **automatisch** aus dem `mode` –
-dort ist nichts von Hand zu ändern.
+**Vercel**: `npx vercel` für die Vorschau, `npx vercel --prod` für live.
+`vercel.json` erzeugt der Build **automatisch** aus dem `mode` – dort ist nichts
+von Hand zu ändern. Marken-Adresse anbinden mit
+`npx vercel domains add <kunde>.kanbuk.com <projekt>` (Projekt-Domain, nie `alias set`).
 
-**Cloudflare Pages**: funktioniert ebenso – der Formular-Endpunkt liegt doppelt
-(`api/` für Vercel, `functions/api/` für Cloudflare).
+Der Motor zielt bewusst **nur auf Vercel**. Frühere Unterstützung für Cloudflare
+Pages / Netlify (zweiter Formular-Endpunkt, `_headers`, `_redirects`) ist
+entfernt: nie genutzt, aber mitzupflegen – und dabei still kaputtgegangen.
+Bei einem Host-Wechsel aus der Versionsgeschichte zurückholen.
 
 Ein Klon ist **eigenständig – technisch garantiert**: `degit` kopiert nur Dateien,
 ohne Git-Historie und ohne Verweis zurück. Ein Kundenprojekt ist also **kein Fork und

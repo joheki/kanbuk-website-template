@@ -374,6 +374,26 @@ function kontrast(hexA, hexB) {
       );
     }
   }
+
+  // Schrift AUF der Markenfarbe (Buttons, Sprunglink). Der Motor wählt dafür
+  // automatisch Schwarz oder Weiß – je nachdem, was besser lesbar ist
+  // (src/lib/theme.ts). Reicht selbst die bessere Wahl nicht, liegt es an der
+  // Markenfarbe selbst: mittelhelle Töne (viele Orange-, Türkis- und Grüntöne)
+  // vertragen weder Weiß noch Schwarz gut. Dann muss das Design ran.
+  const primaer = farbe('primaer');
+  const aufPrimaer = farbe('auf-primaer');
+  if (primaer && aufPrimaer) {
+    const v = kontrast(primaer, aufPrimaer);
+    if (v < 3) {
+      fehler(
+        `Lesbarkeit: Schrift ${aufPrimaer} auf der Markenfarbe ${primaer} hat nur ${v.toFixed(1)}:1 – Buttons und der Sprunglink sind unlesbar. Markenfarbe abdunkeln oder aufhellen (content.config.ts -> design.farben.primaer).`,
+      );
+    } else if (v < 4.5) {
+      warnung(
+        `Lesbarkeit: Schrift auf der Markenfarbe ${primaer} erreicht nur ${v.toFixed(1)}:1 (Norm 4,5:1). Der Motor hat bereits die bessere von Schwarz/Weiß gewählt – für mehr Kontrast muss die Markenfarbe selbst dunkler oder heller werden.`,
+      );
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -460,22 +480,44 @@ if (istLive && /Disallow:\s*\/\s*$/m.test(robots)) {
   fehler('robots.txt sperrt alles, obwohl mode auf "live" steht');
 }
 
-// Sicherheits-Header-Selbstkontrolle: Die Dateien entstehen zwar automatisch,
-// aber Hand-Änderungen oder ein kaputter Build-Hook dürfen nicht still bleiben.
-const headersDatei = join(DIST, '_headers');
-if (existsSync(headersDatei)) {
-  const kopf = readFileSync(headersDatei, 'utf-8');
-  for (const pflicht of ['X-Content-Type-Options', 'Referrer-Policy', 'Permissions-Policy']) {
-    if (!kopf.includes(pflicht)) fehler(`_headers: Sicherheits-Header "${pflicht}" fehlt`);
+// Sicherheits-Header-Selbstkontrolle. Geprüft wird vercel.json – die Datei, die
+// beim einzigen Host des Motors tatsächlich ausgeliefert wird. (Früher stand
+// hier dist/_headers für Cloudflare/Netlify: eine Datei, die auf Vercel
+// niemand liest – die Prüfung bewachte also den falschen Weg.) Sie entsteht
+// automatisch, aber Hand-Änderungen oder ein kaputter Build-Hook dürfen nicht
+// still bleiben.
+const vercelDatei = join(WURZEL, 'vercel.json');
+if (existsSync(vercelDatei)) {
+  let vercelJson;
+  try {
+    vercelJson = JSON.parse(readFileSync(vercelDatei, 'utf-8'));
+  } catch {
+    fehler('vercel.json ist kein gültiges JSON – Vercel lehnt den Deploy komplett ab');
   }
-  if (istLive && !kopf.includes('Strict-Transport-Security')) {
-    fehler('_headers: HSTS fehlt, obwohl die Seite live ist');
-  }
-  if (!istLive && !kopf.includes('X-Robots-Tag')) {
-    fehler('_headers: X-Robots-Tag fehlt, obwohl mode "demo" ist – die Vorschau wäre indexierbar');
+  if (vercelJson) {
+    const gesetzt = (vercelJson.headers ?? [])
+      .flatMap((eintrag) => eintrag.headers ?? [])
+      .map((h) => h.key);
+    for (const pflicht of ['X-Content-Type-Options', 'Referrer-Policy', 'Permissions-Policy']) {
+      if (!gesetzt.includes(pflicht)) fehler(`vercel.json: Sicherheits-Header "${pflicht}" fehlt`);
+    }
+    if (istLive && !gesetzt.includes('Strict-Transport-Security')) {
+      fehler('vercel.json: HSTS fehlt, obwohl die Seite live ist');
+    }
+    if (!istLive && !gesetzt.includes('X-Robots-Tag')) {
+      fehler('vercel.json: X-Robots-Tag fehlt, obwohl mode "demo" ist – die Vorschau wäre indexierbar');
+    }
+    // Vercel prüft die Datei gegen ein Schema und lehnt JEDES unbekannte Feld
+    // ab. Ein Kommentarfeld hier lässt jeden Deploy scheitern.
+    const erlaubt = new Set(['$schema', 'headers', 'redirects', 'cleanUrls', 'trailingSlash', 'rewrites', 'regions', 'framework', 'buildCommand', 'outputDirectory', 'installCommand', 'devCommand', 'github', 'functions', 'crons', 'images']);
+    for (const schluessel of Object.keys(vercelJson)) {
+      if (!erlaubt.has(schluessel)) {
+        fehler(`vercel.json enthält das unbekannte Feld "${schluessel}" – Vercel lehnt den Deploy damit komplett ab`);
+      }
+    }
   }
 } else {
-  fehler('dist/_headers fehlt – der Build-Hook in astro.config.ts läuft nicht');
+  fehler('vercel.json fehlt – der Build-Hook in astro.config.ts läuft nicht');
 }
 
 // ---------------------------------------------------------------------------

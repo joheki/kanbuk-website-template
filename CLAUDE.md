@@ -283,7 +283,7 @@ Indexierung an, Sitemap. Zusätzlich nötig – und das sind **die einzigen drei
 2. `RESEND_API_KEY` + `CONTACT_FROM` (damit das Formular sendet)
 3. Domain verbinden
 
-`_headers`, `_redirects` und `vercel.json` erzeugt der Build **automatisch** aus dem
+`vercel.json` erzeugt der Build **automatisch** aus dem
 `mode` (siehe `astro.config.ts`) – da ist nichts von Hand zu ändern. Früher musste man
 den `X-Robots-Tag` händisch aus `vercel.json` löschen; wurde das vergessen, blieb die
 Seite für Google unsichtbar, ohne dass es jemandem auffiel. Solche stillen Fallen darf
@@ -352,8 +352,11 @@ weiterleitungen: [
 ],
 ```
 
-Daraus entstehen beim Bauen automatisch `_redirects` (Cloudflare/Netlify) und der
-`redirects`-Block in `vercel.json`. Standard ist 301 – das vererbt das Ranking.
+Daraus entsteht beim Bauen automatisch der `redirects`-Block in `vercel.json`.
+Standard ist 301 – das vererbt das Ranking. Adressen mit Fragezeichen
+(`/index.php?id=670`, typisch für alte TYPO3-Seiten) werden dabei korrekt in
+Pfad + `has`-Bedingung zerlegt; ohne das liefen die alten Google-Treffer still
+ins Leere.
 
 ---
 

@@ -1,6 +1,5 @@
 /**
- * Formular-Verarbeitung – von BEIDEN Serverless-Varianten genutzt
- * (Vercel: /api/contact.ts, Cloudflare Pages: /functions/api/contact.ts).
+ * Formular-Verarbeitung – aufgerufen von der Vercel-Funktion /api/contact.ts.
  *
  * Generisch: verarbeitet JEDES in content.config.ts definierte Formular
  * (Kontakt, Reservierung, Terminanfrage, Angebot …). Welche Felder es gibt und

@@ -7,13 +7,18 @@
  * nicht zum Kunden. (Weiß funktioniert auf hellen wie dunklen Kundendesigns,
  * weil die Leiste eine eigene, geschlossene Fläche ist.)
  */
+import { Image } from 'astro:assets';
 import { site } from '../../content.config';
 // Das echte Kanbuk-Logo (Zeichen + Wortmarke, transparent) – Motor-Asset.
 import logo from '../assets/kanbuk-logo.png';
 ---
 
 <div class="demobar" role="note">
-  <img class="demobar__logo" src={logo.src} alt="Kanbuk" width={logo.width} height={logo.height} />
+  {/* Über die Bild-Pipeline statt als rohes <img>: Die Leiste zeigt das Logo
+      18 px hoch, die Datei ist 298 px breit – ungefiltert wären das ~8,6 KB
+      für rund 8 % genutzte Pixel. width + densities liefern eine passende
+      1x/2x-Variante als webp. */}
+  <Image class="demobar__logo" src={logo} alt="Kanbuk" width={84} densities={[1, 2]} format="webp" />
   <span class="demobar__sep" aria-hidden="true"></span>
   <span class="demobar__puls" aria-hidden="true"></span>
   <span class="demobar__text">Vorschau für {site.betrieb.name}</span>

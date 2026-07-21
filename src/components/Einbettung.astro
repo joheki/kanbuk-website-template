@@ -20,6 +20,12 @@
  *   >
  *     <Image src={karte} alt="Karte" />   <!-- Platzhalter (optional) -->
  *   </Einbettung>
+ *   <p data-einbettung-nur-platzhalter>Kartendaten © OpenStreetMap-Mitwirkende</p>
+ *
+ * Alles mit `data-einbettung-nur-platzhalter` im selben Abschnitt verschwindet,
+ * sobald der echte Rahmen geladen ist – gedacht für die Lizenzzeile des
+ * statischen Kartenbildes, die über die dann sichtbare Google-Karte nichts
+ * mehr aussagt.
  */
 import { site } from '../../content.config';
 
@@ -104,7 +110,10 @@ const t =
     font-size: var(--schrift-s);
     max-width: 44ch;
   }
+  /* Mindestens 44×44 px: Das ist die empfohlene Fingerfläche am Handy –
+     darunter tippt man daneben. Gemessener Ausgangswert im Piloten: 36 px hoch. */
   .einbettung__knopf {
+    min-height: 44px;
     padding: var(--raum-2xs) var(--raum-s);
     border: 1px solid var(--farbe-primaer);
     border-radius: var(--radius);

@@ -45,19 +45,22 @@ const { text = VARIANTEN[summe % VARIANTEN.length], class: klasse } = Astro.prop
 </a>
 
 <style>
-  /* Bewusst dezent: erbt Schrift und Farbe der Fußzeile, leicht zurückgenommen.
-     Das Design darf nachschärfen – aber nie verstecken (ein unsichtbarer Link
-     ist auch für Google wertlos bis schädlich). */
+  /* Bewusst dezent – aber NICHT abgedunkelt. Früher stand hier opacity: 0.7;
+     das drückte den Link im Piloten auf 2,2:1 Kontrast (gefordert 4,5:1) und
+     hätte praktisch jede „dezente" Fußzeile durchfallen lassen: Eine 70-%-
+     Abblendung frisst rund zwei Drittel des Kontrasts, also müsste die
+     Grundfarbe schon bei ~8:1 liegen, um konform zu bleiben. Dezenz kommt
+     jetzt allein über die Schriftgröße. Verstecken bleibt verboten – ein
+     unsichtbarer Link ist auch für Google wertlos bis schädlich. Das Prüf-Tor
+     misst den Kontrast der Signatur beim Live-Gang mit. */
   .signatur {
     color: inherit;
-    opacity: 0.7;
     text-decoration: none;
     font-size: var(--schrift-s);
     white-space: nowrap;
   }
   .signatur:hover,
   .signatur:focus-visible {
-    opacity: 1;
     text-decoration: underline;
   }
 </style>

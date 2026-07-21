@@ -96,6 +96,52 @@ const schriftenVorladen = (() => {
   return [...urls];
 })();
 
+/**
+ * Speisekarte / Preisliste für Google (schema.org `hasMenu`).
+ *
+ * Die Daten liegen ohnehin strukturiert in der Config – daraus entsteht ohne
+ * Zusatzaufwand ein Menu-Objekt. Google kann damit Gerichte, Preise und
+ * Kategorien direkt in der Suche zeigen (Rich Result „Speisekarte"); ohne die
+ * Angabe bleibt die Karte für Google eine Textwüste. Preise werden zu Zahlen
+ * normalisiert („4,80 €" -> 4.80), weil schema.org nur Zahlen versteht.
+ */
+const menuLd = (() => {
+  const liste = site.preisliste;
+  if (!liste || liste.kategorien.length === 0) return {};
+  const zahl = (p?: string) => {
+    if (!p) return undefined;
+    const t = p.replace(/[^0-9,.]/g, '').replace(',', '.');
+    const n = Number.parseFloat(t);
+    return Number.isFinite(n) ? n.toFixed(2) : undefined;
+  };
+  return {
+    hasMenu: {
+      '@type': 'Menu',
+      name: 'Karte',
+      ...(liste.pdfDatei && { url: `${site.domain.replace(/\/$/, '')}/${liste.pdfDatei}` }),
+      hasMenuSection: liste.kategorien.map((kat) => ({
+        '@type': 'MenuSection',
+        name: kat.titel,
+        ...(kat.untertitel && { description: kat.untertitel }),
+        hasMenuItem: kat.gruppen.flatMap((gruppe) =>
+          gruppe.positionen
+            .filter((pos) => zahl(pos.preis ?? pos.varianten?.[0]?.preis))
+            .map((pos) => ({
+              '@type': 'MenuItem',
+              name: pos.name,
+              ...(pos.beschreibung && { description: pos.beschreibung }),
+              offers: {
+                '@type': 'Offer',
+                price: zahl(pos.preis ?? pos.varianten?.[0]?.preis),
+                priceCurrency: 'EUR',
+              },
+            })),
+        ),
+      })),
+    },
+  };
+})();
+
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': jsonLdTyp(site.branche),
@@ -117,6 +163,7 @@ const jsonLd = {
   ...(site.betrieb.socialLinks.length > 0 && {
     sameAs: site.betrieb.socialLinks.map((s) => s.url),
   }),
+  ...menuLd,
 };
 ---
 
@@ -160,10 +207,17 @@ const jsonLd = {
     <meta property="og:image" content={ogBild} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    {/* site_name erscheint in der Vorschau über dem Titel; die Bild-
+        Beschreibung liest ein Screenreader beim geteilten Link vor.
+        X/Twitter wertet og:image:alt NICHT aus – dort braucht es die
+        eigene Angabe, sonst bleibt das Bild dort unbeschriftet. */}
+    <meta property="og:site_name" content={site.betrieb.name} />
+    <meta property="og:image:alt" content={`${site.betrieb.name} – ${site.betrieb.kurzbeschreibung}`} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={vollerTitel} />
     <meta name="twitter:description" content={desc} />
     <meta name="twitter:image" content={ogBild} />
+    <meta name="twitter:image:alt" content={`${site.betrieb.name} – ${site.betrieb.kurzbeschreibung}`} />
 
     <meta name="theme-color" content={site.design.farben.primaer} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />

@@ -7,10 +7,18 @@ import { site } from './content.config';
 const istLive = site.mode === 'live';
 
 /**
- * Erzeugt nach dem Build automatisch:
- *   - _headers    (Cloudflare Pages / Netlify)
- *   - _redirects  (Cloudflare Pages / Netlify)
- *   - vercel.json (Vercel)
+ * Erzeugt nach dem Build automatisch die Auslieferungs-Regeln für Vercel
+ * (vercel.json): Sicherheits-Kopfzeilen, Sperr-Header je nach `mode`,
+ * Schriften-Caching und die Weiterleitungen der Vorgänger-Website.
+ *
+ * NUR VERCEL, mit Absicht: Früher entstanden hier zusätzlich `_headers` und
+ * `_redirects` für Cloudflare Pages / Netlify. Kanbuk hostet ausschließlich
+ * auf Vercel – die zweite Schiene wurde nie ausgeliefert, musste aber
+ * mitgepflegt werden und ging dabei still kaputt (in `_redirects` sind
+ * Query-Strings wie `/index.php?id=670` gar nicht zulässig, die alten
+ * TYPO3-Adressen hätten dort nie gegriffen). Doppelte Wege heißen doppelte
+ * Fehlerquellen. Wer später doch auf einen anderen Host wechselt, holt sich
+ * die Erzeugung aus der Versionsgeschichte zurück.
  *
  * WARUM AUTOMATISCH: Früher stand der X-Robots-Tag fest in einer committeten
  * vercel.json und musste beim Live-Gang von Hand entfernt werden. Vergisst man
@@ -69,24 +77,6 @@ function auslieferungsRegeln() {
          * darum ist ein Jahr + immutable sicher.
          */
         const schriftCache = { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' };
-
-        // --- _headers (Cloudflare Pages / Netlify) ---
-        const headerZeilen = [
-          '/*',
-          ...kopfzeilen.map((h) => `  ${h.key}: ${h.value}`),
-          '',
-          '/fonts/*',
-          `  ${schriftCache.key}: ${schriftCache.value}`,
-          '',
-        ];
-        writeFileSync(`${outDir}/_headers`, headerZeilen.join('\n'), 'utf-8');
-
-        // --- _redirects (Cloudflare Pages / Netlify) ---
-        // Rettet das Google-Ranking, wenn der Betrieb vorher andere Adressen hatte.
-        if (site.weiterleitungen.length > 0) {
-          const zeilen = site.weiterleitungen.map((w) => `${w.von}  ${w.nach}  ${w.status ?? 301}`);
-          writeFileSync(`${outDir}/_redirects`, zeilen.join('\n') + '\n', 'utf-8');
-        }
 
         // --- vercel.json (im Projekt-Ordner – dort liest Vercel sie) ---
         //

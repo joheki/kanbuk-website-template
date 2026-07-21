@@ -72,6 +72,47 @@ for (const seite of seiten) {
 
     await page.goto(BASIS + seite, { waitUntil: 'load' });
     await page.evaluate(() => document.fonts.ready);
+
+    // 0) LCP-MESSUNG – MUSS VOR jeder Manipulation unten stehen.
+    //    Das größte sichtbare Element ("Largest Contentful Paint") bestimmt,
+    //    wann eine Seite für Google und für den Besucher "da" ist. Ist das
+    //    ausgerechnet ein Bild mit loading="lazy", lädt es erst verzögert –
+    //    der klassische Ladezeit-Fehler.
+    //    ACHTUNG: Weiter unten schaltet diese Prüfung alle Lazy-Bilder auf
+    //    "sofort" (für brauchbare Ganzseiten-Screenshots). Würde man danach
+    //    messen, verdeckt die Prüfung genau den Fehler, den sie finden soll.
+    //    WICHTIG zur Technik: LCP-Einträge stehen NICHT in der normalen
+    //    Performance-Liste – performance.getEntriesByType('largest-contentful-paint')
+    //    liefert immer ein leeres Ergebnis. Nur ein PerformanceObserver mit
+    //    buffered:true bekommt sie. (Erste Fassung dieser Prüfung war genau
+    //    deshalb still blind und meldete brav "alles gut".)
+    const lcp = await page.evaluate(async () => {
+      await new Promise((r) => setTimeout(r, 700)); // LCP darf sich setzen
+      const eintraege = await new Promise((fertig) => {
+        const gesammelt = [];
+        try {
+          const beobachter = new PerformanceObserver((liste) => gesammelt.push(...liste.getEntries()));
+          beobachter.observe({ type: 'largest-contentful-paint', buffered: true });
+          setTimeout(() => {
+            beobachter.disconnect();
+            fertig(gesammelt);
+          }, 300);
+        } catch {
+          fertig([]);
+        }
+      });
+      const letzter = eintraege[eintraege.length - 1];
+      const el = letzter?.element;
+      if (!el) return null;
+      const istBild = el.tagName === 'IMG';
+      return {
+        zeit: Math.round(letzter.startTime),
+        tag: el.tagName.toLowerCase(),
+        lazy: istBild && el.getAttribute('loading') === 'lazy',
+        datei: istBild ? ((el.currentSrc || el.src || '').split('/').pop() || '').slice(0, 44) : '',
+      };
+    });
+
     // Einblende-Animationen sofort in den Endzustand bringen – sonst zeigen
     // Ganzseiten-Screenshots halbtransparente Sektionen und jede visuelle
     // Beurteilung würde Geister-Fehler sehen.
@@ -170,8 +211,15 @@ for (const seite of seiten) {
     for (const f of [...new Set(jsFehler)]) probleme.push(`${kennung}: JS-Fehler -> ${f.slice(0, 140)}`);
     for (const k of [...new Set(kaputt)]) probleme.push(`${kennung}: lädt nicht -> ${k.slice(0, 140)}`);
     for (const m of matschig) probleme.push(`${kennung}: VERPIXELT (hochskaliert) -> ${m}\n      Abhilfe: widths der <Image> bis zur echten Anzeigebreite erweitern.`);
+    if (lcp?.lazy) {
+      probleme.push(
+        `${kennung}: GRÖSSTES BILD LÄDT VERZÖGERT -> ${lcp.datei} (LCP nach ${lcp.zeit} ms)\n` +
+          `      Das Bild, das den ersten Eindruck bestimmt, hat loading="lazy" und startet erst spät.\n` +
+          `      Abhilfe: loading="eager" + fetchpriority="high" (bei <Image>: loading="eager" fetchpriority="high").`,
+      );
+    }
 
-    console.log(`  ${ueberlauf || jsFehler.length || kaputt.length || matschig.length ? '✗' : '✓'} ${kennung}  → pruefung/${name}`);
+    console.log(`  ${ueberlauf || jsFehler.length || kaputt.length || matschig.length || lcp?.lazy ? '✗' : '✓'} ${kennung}  → pruefung/${name}`);
     await kontext.close();
   }
 }

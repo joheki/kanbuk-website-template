@@ -58,7 +58,12 @@ export function tabsStarten(): void {
         p.hidden = !aktiv;
         p.classList.toggle('ist-aktiv', aktiv);
       });
-      if (box.hasAttribute('data-tabs-url')) {
+      /* Adresszeile NUR nach einer echten Bedienung anfassen (durchKlick).
+         Vorher schrieb schon der Startaufruf den Anker hinein: Wer die
+         Speisekarte bloß öffnete, sah plötzlich „…/speisekarte#fruehstueck",
+         ohne etwas angeklickt zu haben – die Adresse gehört dem Besucher, nicht
+         der Mechanik. Gelesen wird der Anker weiterhin (Deep-Links bleiben). */
+      if (durchKlick && box.hasAttribute('data-tabs-url')) {
         history.replaceState(null, '', `#${id}`);
       }
 
