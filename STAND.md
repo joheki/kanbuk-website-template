@@ -47,6 +47,16 @@ Phasen: `Vorlage → Portiert (Vorschau) → Beim Kunden vorgestellt → Gebucht
 
 <!-- Eine Zeile pro Arbeitssitzung: Datum – was passiert ist. Neueste oben. -->
 
+- **2026-07-21** – Signatur-Baustein (Kanbuk-Backlink) samt Anker-Rotation je Kunde
+  und Prüf-Tor-Zwang (Marken-Anker, kein nofollow, keine Money-Keywords);
+  Karten-Erzeuger um Stile hell/dunkel/dezent + Retina + echte Standort-Nadel
+  erweitert, 2-Klick-Google-Maps als Rezept; Sichtprüfung erkennt jetzt
+  hochskalierte (verpixelte) Bilder; toter EU-Streitbeilegungs-Link entfernt
+  plus Prüf-Tor-Regel dagegen. **Wichtigster Fund: Der Ein-Rutsch-Grundsatz war
+  seit dem Piloten nie eingelöst** – eine Erlaubnis-LISTE wird nie vollständig,
+  jede neue Befehlsform fragte nach und unterbrach den Nutzer. Behoben mit
+  permissions.defaultMode = 'auto' (Version 2026.7.21). Läuft: Komplett-Audit
+  der Daylounge-Referenz (41 Befunde, Gegenprüfung offen).
 - **2026-07-17** – Großer Ausbau-Tag: (1) Pilot-Rückfluss daylounge eingearbeitet
   (10 Motor-Fixes, 9 Beschleuniger, Version 2026.7.17). (2) Demo-Bote v2:
   Projekt-Archiv (Zip) als Standardweg, echte Mehrseiten-Demos, Bildfelder des
